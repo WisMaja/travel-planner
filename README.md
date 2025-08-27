@@ -3,6 +3,7 @@ Aplikacja webowa do komplekoswego planowania wyjazdów
 
 ## Spis treści
 - [Jak działa aplikacja](#jak-uruchomić-projekt)
+- 
 
 
 ## Technologie użyte:
@@ -37,3 +38,14 @@ npm run dev
 cd backend
 dotnet run
 ```
+
+## Frontendny przy uzyciu 
+Aplikacja posiada frontend napny przy uzyciu React + Vite + TypeScript + Tailwind CSS
+
+### React
+
+### Vite
+
+### TypeScript
+
+### Tailwind CSS
