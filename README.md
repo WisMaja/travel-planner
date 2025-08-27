@@ -1,6 +1,10 @@
 # TRAVEL PLANER
 Aplikacja webowa do komplekoswego planowania wyjazdów 
 
+## Spis treści
+- [Jak działa aplikacja](#jak-uruchomić-projekt)
+
+
 ## Technologie użyte:
 - Frontend: React + Vite + TypeScript + Tailwind CSS
 - Backend: ASP.NET Core Web API + Entity Framework Core
