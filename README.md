@@ -13,7 +13,7 @@ Aplikacja webowa do komplekoswego planowania wyjazdów
 
 
 ## Struktóra projektu
-/travel-planner - Główny folder <>/br
+/travel-planner - Główny folder </br>
 |- frontend/ </br>
 |- backend/  </br>
 |- .gitignore </br>
