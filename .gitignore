@@ -23,21 +23,29 @@ dist-ssr
 *.sln
 *.sw?
 
-# --- Ogólne ---
-.env
-*.log
-.DS_Store
-.vscode/
-
-# --- Frontend (React + Vite) ---
+# FRONTEND (React + Vite + TypeScript)
 frontend/node_modules/
 frontend/dist/
+frontend/.env
+frontend/.DS_Store
 
-# --- Backend (.NET) ---
+# BACKEND (.NET Core + EF Core)
 backend/bin/
 backend/obj/
+backend/.vs/
 backend/Migrations/
+backend/.env
+backend/appsettings.*.json
+backend/*.user
 
-# --- Systemowe ---
-Thumbs.db
+# GLOBAL / SYSTEMOWE
+*.log
+*.tmp
 *.swp
+.vscode/
+.DS_Store
+Thumbs.db
+.env
+
+# GITHUB ACTIONS / CI
+.github/*.log
