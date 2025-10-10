@@ -44,8 +44,18 @@ Aplikacja posiada frontend napny przy uzyciu React + Vite + TypeScript + Tailwin
 
 ### React
 
+```bash
+npm install react-router-dom
+```
+
 ### Vite
 
 ### TypeScript
 
 ### Tailwind CSS
+
+```bash
+npm install tailwindcss @tailwindcss/vite
+```
+
+
