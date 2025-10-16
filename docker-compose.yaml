@@ -1,0 +1,15 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest  # Obraz SQL Servera 2022
+    container_name: sqlserver                          # Nazwa kontenera
+    environment:
+      SA_PASSWORD: "YourStrong!Passw0rd"               # Hasło administratora (SA = System Administrator)
+      ACCEPT_EULA: "Y"                                 # Akceptacja licencji Microsoft
+    ports:
+      - "1433:1433"                                    # Mapowanie portu hosta (lewy) na port kontenera (prawy)
+    volumes:
+      - sql_data:/var/opt/mssql                        # Wolumen do zapisu danych bazy na dysku
+
+volumes:
+  sql_data:                                             # Deklaracja wolumenu
+  

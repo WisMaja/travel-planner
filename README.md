@@ -3,11 +3,11 @@ Aplikacja webowa do komplekoswego planowania wyjazdów
 
 ## Spis treści
 - [Jak działa aplikacja](#jak-uruchomić-projekt)
-- 
+- [Baza danych](#baza-danych)
 
 
 ## Technologie użyte:
-- Frontend: React + Vite + TypeScript + Tailwind CSS
+- Frontend: 
 - Backend: ASP.NET Core Web API + Entity Framework Core
 - Repozytorium: GitHub
 
@@ -29,14 +29,18 @@ Aplikacja webowa do komplekoswego planowania wyjazdów
 ### Frontend
 ```bash
 cd frontend
-npm install
-npm run dev
+
 ```
 
 ### Backend
 ```bash
 cd backend
 dotnet run
+```
+
+### Baza Danych
+```bash
+docker compose up --build
 ```
 
 ## Frontendny przy uzyciu 
@@ -58,4 +62,11 @@ npm install react-router-dom
 npm install tailwindcss @tailwindcss/vite
 ```
 
+## Baza danych 
+### Struktóra bazy danych
+Baza danych została zaprojektowana w sposób modularny. Została zoptymalizowana pod integracje z zewnetrznymi API map takimi jak Google/OSM/Mapbox.
+
+#### Tabele
+Tabela | Opis
+|:--|:--
 
