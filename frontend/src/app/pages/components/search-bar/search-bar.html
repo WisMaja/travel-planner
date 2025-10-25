@@ -1,1 +1,16 @@
-<p>search-bar works!</p>
+<div class="search-bar">
+  <div class="search-bar__icon">
+    <!-- narazie ikona svg -->
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="rgba(82,103,156,0.4)" stroke-width="2"/>
+      <line x1="16.65" y1="16.65" x2="22" y2="22" stroke="rgba(82,103,156,0.4)" stroke-width="2"/>
+    </svg>
+  </div>
+
+  <input
+    class="search-bar__input"
+    [value]="value"
+    [placeholder]="placeholder"
+    (input)="onInput($event)"
+  />
+</div>

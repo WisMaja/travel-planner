@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { Button } from '../components/button/button'; 
 import { Logo } from '../components/logo/logo';
+import { SearchBar } from '../components/search-bar/search-bar';
 
 @Component({
   selector: 'app-home-page',
-  imports: [Button, Logo],
+  imports: [Button, Logo, SearchBar],
   templateUrl: './home-page.html',
   styleUrls: ['./home-page.scss'], // <-- poprawione
 })
