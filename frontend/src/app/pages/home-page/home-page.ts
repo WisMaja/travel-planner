@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { Button } from '../components/button/button'; 
+import { Logo } from '../components/logo/logo';
 
 @Component({
   selector: 'app-home-page',
-  imports: [Button],
+  imports: [Button, Logo],
   templateUrl: './home-page.html',
   styleUrls: ['./home-page.scss'], // <-- poprawione
 })
