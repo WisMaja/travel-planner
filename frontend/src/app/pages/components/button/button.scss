@@ -1,53 +1,138 @@
 .btn {
-  display: inline-block;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: none;
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: filter .15s ease, background .15s ease, box-shadow .15s ease;
+  padding: 0; /* każdy wariant ma własny padding */
+  background: transparent;
+  color: #000;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  &:disabled { opacity: .6; cursor: not-allowed; }
+  &:hover:not(:disabled) { filter: brightness(0.98); }
+
+  .btn__label { white-space: nowrap; }
+}
+
+/* ========== FILTR: NIEAKTYWNY ========== */
+/* Wymiary z projektu: 119x38, border 1px rgba(82,103,156,.2) */
+/* ========== FILTR: NIEAKTYWNY ========== */
+.btn--filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 16px; /* możesz dobrać padding */
+  height: 38px;
+
+  background: transparent;
+  border: 1px solid rgba(82, 103, 156, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+
+  .btn__label {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    color: #000000;
+    text-align: center;
+    white-space: nowrap; /* żeby napis się nie łamał */
+  }
+
+  &:hover {
+    border-color: rgba(82, 103, 156, 0.4);
+    background: rgba(82, 103, 156, 0.3);
+
   }
 }
 
-/* warianty kolorów */
-.btn--primary {
-  background-color: #111827;
-  color: white;
+/* ========== FILTR: AKTYWNY ========== */
+.btn--filter-active {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  height: 38px;
+
+  background: rgba(82, 103, 156, 0.2);
+  border: 1px solid rgba(82, 103, 156, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+
+  .btn__label {
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    color: #000000;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    background: rgba(82, 103, 156, 0.3);
+  }
 }
 
-.btn--primary:hover:not(:disabled) {
-  background-color: #1f2937;
+/* ========== BASIC ACCEPT ========== */
+/* Wymiary z projektu: 80x40, padding 4px 11px, białe tło, cień, radius 5px */
+.btn--basic-accept {
+  display: inline-flex;
+  gap: 10px;
+  padding: 4px 11px;
+  width: 80px;
+  height: 40px;
+  background: #FFFFFF;
+  box-shadow: 4px 4px 5px 1px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+
+  .btn__label {
+    width: 43px; height: 16px;
+    font-family: 'Enriqueta', serif;
+    font-style: normal; font-weight: 400;
+    font-size: 12px; line-height: 16px;
+    color: #2F2F2F;
+    text-align: center;
+  }
 }
 
-.btn--secondary {
-  background-color: white;
-  color: #111827;
-  border: 1px solid #e5e7eb;
+/* ========== OAUTH GOOGLE ========== */
+/* Wymiary: 188x43, padding 9px 20px, box-shadow 4/4/4, radius 20px */
+.btn--oauth-google {
+  padding: 9px 20px;
+  width: 188px;
+  height: 43px;
+  background: #FFFFFF;
+  box-shadow: 4px 4px 4px rgba(0,0,0,0.25);
+  border-radius: 20px;
+
+  /* ikona */
+  [icon] {
+    display: inline-flex;
+    width: 25px; height: 25px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn__label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    line-height: 15px; /* identyczne z wysokością w projekcie */
+    color: #000000;
+  }
 }
 
-.btn--secondary:hover:not(:disabled) {
-  background-color: #f3f4f6;
-}
-
-.btn--basic {
-  background-color: transparent;
-  color: #111827;
-  border: 1px solid #d1d5db;
-}
-
-.btn--basic:hover:not(:disabled) {
-  background-color: #f9fafb;
-}
-
-.btn--other {
-  background-color: #2563eb;
-  color: white;
-}
-
-.btn--other:hover:not(:disabled) {
-  background-color: #1e40af;
+/* (opcjonalnie) delikatny hover */
+.btn--oauth-google:hover:not(:disabled) {
+  box-shadow: 4px 6px 8px rgba(0,0,0,0.2);
 }

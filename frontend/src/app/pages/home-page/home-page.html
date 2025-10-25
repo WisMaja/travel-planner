@@ -1,14 +1,24 @@
 <section class="home">
-  <h1>Witaj w aplikacji planowania podróży</h1>
-  <p>
-    Tutaj możesz tworzyć, edytować i przeglądać swoje plany podróży.
-  </p>
+  <h1>Planer Podróży</h1>
+  <h3>Zacznij planować swoją przygodę już dziś!</h3>
 
   <div class="actions">
-<app-button label="Zapisz" variant="primary" ></app-button>
-<app-logo></app-logo>
-<!-- <app-search-bar placeholder="Szukaj planu..." (valueChange)="onSearch($event)"></app-search-bar> -->
-<app-search-bar></app-search-bar>
+    <app-logo></app-logo>
+    <app-search-bar></app-search-bar>
+    <app-button variant="filter" label="Opcja 1"></app-button>
+    <app-button variant="filter-active" label="Opcja 1"></app-button>
+    <app-button variant="basic-accept" label="Akceptuj"></app-button>
 
+    <app-button variant="oauth-google" label="Login with Google">
+      <span icon>
+        <svg viewBox="0 0 24 24" width="25" height="25" aria-hidden="true">
+          <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.66 4.1-5.5 4.1-3.32 0-6-2.74-6-6.1s2.68-6.1 6-6.1c1.9 0 3.18.8 3.9 1.5l2.65-2.55C16.7 3.4 14.54 2.5 12 2.5 6.98 2.5 2.9 6.62 2.9 12s4.08 9.5 9.1 9.5c5.25 0 8.7-3.69 8.7-8.9 0-.6-.06-1.02-.14-1.46H12z"/>
+        </svg>
+      </span>
+    </app-button>
+
+    <app-top-bar
+      [options]="['Aktualne', 'Nadchodzące', 'Ulubione', 'Odbyte', 'Archiwum']">
+    </app-top-bar>
   </div>
 </section>

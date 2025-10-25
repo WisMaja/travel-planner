@@ -1,7 +1,10 @@
 <button
   class="btn btn--{{ variant }}"
   [disabled]="disabled"
+  [attr.type]="type"
   (click)="onClick()"
 >
-  {{ label }}
+  <!-- ikonka opcjonalna (np. G) przez ng-content -->
+  <ng-content select="[icon]"></ng-content>
+  <span class="btn__label">{{ label }}</span>
 </button>

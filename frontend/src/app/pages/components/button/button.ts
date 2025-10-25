@@ -1,7 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-type Variant = 'primary' | 'secondary' | 'basic' | 'other';
+
+type Variant =
+  | 'primary' | 'secondary' | 'basic' | 'other'
+  | 'filter' | 'filter-active'
+  | 'basic-accept'
+  | 'oauth-google';
 
 @Component({
   selector: 'app-button',
@@ -14,6 +19,7 @@ export class Button {
   @Input() label = 'Przycisk';
   @Input() variant: Variant = 'primary';
   @Input() disabled = false;
+  @Input() type: 'button' | 'submit' | 'reset' = 'button';
 
   @Output() clicked = new EventEmitter<void>();
 

@@ -1,1 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #fff;
+  color: #000;
+}
+
+h1 {
+  font-family: 'Esteban', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 60px;
+  line-height: 76px;
+  text-align: center;
+  color: #000000;
+
+   @media (max-width: 768px) {
+    font-size: 36px;
+    line-height: 48px;
+  }
+}
+
+h3 {
+  font-family: 'Enriqueta', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 27px;
+  text-align: center;
+  color: #52679C;
+}
