@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
 
 
 type Variant =
@@ -19,9 +21,21 @@ export class Button {
   @Input() label = 'Przycisk';
   @Input() variant: Variant = 'primary';
   @Input() disabled = false;
+  @Input() icon?: string;
+  @Input() navigateTo?: string;
+
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
 
   @Output() clicked = new EventEmitter<void>();
 
-  onClick() { if (!this.disabled) this.clicked.emit(); }
-}
+
+  constructor(private router: Router) {}
+
+  onClick() {
+    this.clicked.emit();
+
+    // jeśli ustawiono trasę — przejdź
+    if (this.navigateTo) {
+      this.router.navigate([this.navigateTo]);
+    }}
+  }
