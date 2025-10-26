@@ -1,0 +1,17 @@
+<nav class="top-bar-plan" role="tablist" aria-label="Etapy planu">
+  <ng-container *ngFor="let s of steps">
+    <a
+      [routerLink]="s.to"
+      routerLinkActive="is-active"
+      [routerLinkActiveOptions]="{ exact: s.exact !== false }"
+      #rla="routerLinkActive"
+      class="step-nav__link"
+      [attr.aria-current]="rla.isActive ? 'page' : null"
+    >
+      <app-button
+        [label]="s.label"
+        [variant]="rla.isActive ? activeVariant : variant">
+      </app-button>
+    </a>
+  </ng-container>
+</nav>

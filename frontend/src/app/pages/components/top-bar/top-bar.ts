@@ -1,11 +1,15 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
-import { Button } from '../button/button';
+import { SharedImports } from '../../../shared/shared-imports/shared-imports';
+
+interface NavOption {
+  label: string;
+  route?: string; // opcjonalna ścieżka
+}
 
 @Component({
   selector: 'app-top-bar',
   standalone: true,
-  imports: [Button, CommonModule],
+  imports: [SharedImports],
   templateUrl: './top-bar.html',
   styleUrl: './top-bar.scss',
 })

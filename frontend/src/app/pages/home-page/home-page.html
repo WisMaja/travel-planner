@@ -27,4 +27,17 @@
       [options]="['Aktualne', 'Nadchodzące', 'Ulubione', 'Odbyte', 'Archiwum']">
     </app-top-bar>
   </div>
+  <div class="navigation">
+    <h3>Nawigacja z home page</h3>
+        <app-button
+      label="Wyloguj się"
+      variant="basic-accept"
+      navigateTo="/signin">
+    </app-button>
+      <app-button
+      label="Utwórz nowy plan"
+      variant="basic-accept"
+      navigateTo="/plan/basic-info/edit">
+    </app-button>
+    </div>
 </section>

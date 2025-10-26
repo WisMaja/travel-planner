@@ -2,11 +2,11 @@ import { Component } from '@angular/core';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 
 @Component({
-  selector: 'app-signup',
+  selector: 'app-plan-places',
   imports: [SharedImports],
-  templateUrl: './signup.html',
-  styleUrl: './signup.scss',
+  templateUrl: './plan-places.html',
+  styleUrl: './plan-places.scss',
 })
-export class Signup {
-  
+export class PlanPlaces {
+
 }

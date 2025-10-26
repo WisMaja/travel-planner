@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { Logo } from '../../pages/components/logo/logo';
+import { SharedImports } from '../../shared/shared-imports/shared-imports';
 
 @Component({
   selector: 'app-signin',
-  imports: [Logo],
+  imports: [SharedImports],
   templateUrl: './signin.html',
   styleUrl: './signin.scss',
 })
