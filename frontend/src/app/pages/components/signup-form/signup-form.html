@@ -1,0 +1,55 @@
+<form class="signup" [formGroup]="form" (ngSubmit)="submit()">
+  <!-- Tytuł -->
+  <h2 class="signup__title">Sing in</h2>
+
+  <!-- E-mail -->
+  <label class="signup__label" for="email">Email</label>
+  <div class="input" >
+    <input
+      id="email"
+      class="input__field"
+      type="email"
+      formControlName="email"
+      placeholder="Email"
+      autocomplete="email"
+    />
+    <span class="input__icon" aria-hidden="true">
+      <!-- ikona koperty (minimalne SVG) -->
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path fill="#D7D7D7" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v0.3l-10 7-10-7V6zm0 3.5l9.4 6.6a1 1 0 0 0 1.2 0L22 9.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5z"/>
+      </svg>
+    </span>
+  </div>
+
+  <!-- Hasło -->
+  <label class="signup__label" for="password">Hasło</label>
+  <div class="input">
+    <input
+      id="password"
+      class="input__field"
+      [type]="hide ? 'password' : 'text'"
+      formControlName="password"
+      placeholder="Password"
+      autocomplete="current-password"
+    />
+    <button type="button" class="input__icon input__icon--btn" (click)="togglePassword()" aria-label="Pokaż/ukryj hasło">
+      <!-- oko (outline) -->
+      <svg *ngIf="hide" viewBox="0 0 24 24" width="24" height="24">
+        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
+              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
+      </svg>
+      <svg *ngIf="!hide" viewBox="0 0 24 24" width="24" height="24">
+        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
+              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
+        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
+        <line x1="3" y1="21" x2="21" y2="3" stroke="#D7D7D7" stroke-width="1.5"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Akceptuj -->
+  <div class="signup__actions">
+<app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+  </div>
+</form>

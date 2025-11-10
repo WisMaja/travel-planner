@@ -21,9 +21,10 @@ import { PlanChecklist } from './pages/plan-checklist/plan-checklist';
 export const routes: Routes = [
   // --- Główne ekrany aplikacji ---
   { path: '', redirectTo: 'home', pathMatch: 'full' },
-  { path: 'home', component: HomePage },
-  { path: 'signin', component: Signin },
-  { path: 'signup', component: Signup },
+  { path: 'signin', component: Signin, data: { animation: 'SigninPage' } },
+  { path: 'signup', component: Signup, data: { animation: 'SignupPage' } },
+  { path: 'home', component: HomePage, data: { animation: 'HomePage' } },
+
   { path: 'settings', component: Settings },
 
   // --- Plan: widoki i edycje ---

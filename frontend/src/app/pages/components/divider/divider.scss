@@ -1,0 +1,67 @@
+.divider {
+  display: flex; /* Ustawienie Flexbox, aby elementy były w jednej linii */
+  align-items: center; /* Wyrównanie elementów w pionie */
+  width: 100%; /* Zajmuje całą dostępną szerokość */
+  gap: 10px; /* Odstęp między liniami a tekstem */
+  justify-content: center; /* Środkowanie treści pomiędzy liniami */
+
+
+  //font-family: 'Inter', sans-serif;
+  //font-weight: 400;
+  //font-size: 12px;
+  //line-height: 15px;
+  //color: #000;
+  //gap: 6px;
+
+  &__content {
+    display: flex; /* Pozwala na umieszczenie tekstu i linku razem */
+    align-items: center;
+    gap: 5px; /* Odstęp między tekstem a linkiem */
+    color: #52679c;
+    font-size: 12px;
+    line-height: 15px;
+    white-space: nowrap; /* Nie pozwala na przenoszenie treści do nowej linii */
+  }
+
+
+  //&--with-lines {
+  //  flex-direction: row;
+  //  flex-wrap: wrap;
+  //  justify-content: center;
+  //  align-content: center;
+  //  gap: 1px 45px;
+  //  width: 100%;
+  //  max-width: 570px;
+  //}
+
+  &__line {
+    flex-grow: 1; /* Linie elastycznie dopasowują swoją długość */
+    height: 2px; /* Zwiększenie grubości dla lepszej widoczności */
+    background-color: #52679c; /* Kolor linii */
+    width: 100%;
+  }
+
+
+  &__text {
+    color: #52679c;
+    font-size: 12px;
+    line-height: 15px;
+  }
+
+  &__link {
+    color: #52679c;
+    font-weight: 500;
+    margin-left: 4px;
+    text-decoration: none;
+    transition: 0.2s ease;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &--simple {
+    width: 259px;
+    color: #000;
+  }
+}

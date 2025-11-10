@@ -1,0 +1,17 @@
+<div class="divider">
+  <!-- Linia po lewej -->
+  <div *ngIf="divider" class="divider__line"></div>
+
+  <!-- Tekst z opcjonalnym linkiem -->
+  <div class="divider__content">
+    {{ text }}
+    <a *ngIf="linkText && linkRoute"
+       [routerLink]="linkRoute"
+       class="divider__link">
+      {{ linkText }}
+    </a>
+  </div>
+
+  <!-- Linia po prawej -->
+  <div *ngIf="divider" class="divider__line"></div>
+</div>

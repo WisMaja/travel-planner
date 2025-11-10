@@ -1,0 +1,26 @@
+.photo-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  padding: 20px;
+  width: 100%;
+  height: 100%;
+
+  filter: drop-shadow(-5px 2px 10px rgba(82, 103, 156, 0.3)); /* Lżejszy cień */;
+  border-radius: 20px;
+  overflow: visible; /* kluczowe – ukrywa nadmiar obrazu */
+
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* dopasowanie szerokości bez deformacji */
+  object-position: center; /* obraz przycięty centralnie */
+  border-radius: 20px;
+}
