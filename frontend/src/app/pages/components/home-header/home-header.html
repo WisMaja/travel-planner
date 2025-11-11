@@ -1,0 +1,22 @@
+<div class="home-header">
+  <div class="home-header__left">
+    <app-logo name="PLANGO"></app-logo>
+    <app-search-bar 
+      placeholder="Szukaj" 
+      [value]="searchQuery" 
+      (valueChange)="onSearchChange($event)">
+    </app-search-bar>
+  </div>
+  <div class="home-header__user-menu">
+    <app-button 
+      variant="basic-accept" 
+      label="Ustawienia" 
+      navigateTo="/settings" 
+      class="home-header__settings-button">
+      <span icon>
+        <app-form-icon name="user" [size]="15" color="#52679C"></app-form-icon>
+      </span>
+    </app-button>
+  </div>
+</div>
+

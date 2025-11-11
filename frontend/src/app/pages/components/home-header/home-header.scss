@@ -1,0 +1,33 @@
+.home-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 58px;
+  width: calc(100% + 116px);
+  margin-left: -45px;
+  margin-right: 90vh;
+  margin-top: -20px;
+  height: 58px;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+.home-header__left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 100px;
+  flex-shrink: 0;
+}
+
+.home-header__user-menu {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.home-header__settings-button {
+  flex-shrink: 0;
+}
+
