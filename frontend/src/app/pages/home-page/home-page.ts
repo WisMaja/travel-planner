@@ -6,7 +6,7 @@ import { TopBar } from '../components/top-bar/top-bar';
 
 @Component({
   selector: 'app-home-page',
-  imports: [Button, Logo, SearchBar, TopBar],
+  imports: [],//Button, Logo, SearchBar, TopBar],
   templateUrl:'./home-page.html',
   styleUrl: './home-page.scss', 
 })

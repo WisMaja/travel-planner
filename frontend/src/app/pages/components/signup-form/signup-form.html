@@ -1,55 +1,141 @@
 <form class="signup" [formGroup]="form" (ngSubmit)="submit()">
   <!-- Tytuł -->
-  <h2 class="signup__title">Sing in</h2>
+  <h2 class="signup__title">Rejestracja</h2>
 
-  <!-- E-mail -->
-  <label class="signup__label" for="email">Email</label>
-  <div class="input" >
-    <input
-      id="email"
-      class="input__field"
-      type="email"
-      formControlName="email"
-      placeholder="Email"
-      autocomplete="email"
-    />
-    <span class="input__icon" aria-hidden="true">
-      <!-- ikona koperty (minimalne SVG) -->
-      <svg viewBox="0 0 24 24" width="24" height="24">
-        <path fill="#D7D7D7" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v0.3l-10 7-10-7V6zm0 3.5l9.4 6.6a1 1 0 0 0 1.2 0L22 9.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5z"/>
-      </svg>
-    </span>
+  <!-- Imię i Nazwisko w jednym rzędzie -->
+  <div class="signup__row">
+    <div class="signup__field">
+      <label class="signup__label" for="firstName">Imię</label>
+      <div class="input">
+        <input
+          id="firstName"
+          class="input__field"
+          type="text"
+          formControlName="firstName"
+          placeholder="Imię"
+          autocomplete="given-name"
+        />
+        <span class="input__icon" aria-hidden="true">
+          <app-form-icon name="user"></app-form-icon>
+        </span>
+      </div>
+    </div>
+
+    <div class="signup__field">
+      <label class="signup__label" for="lastName">Nazwisko</label>
+      <div class="input">
+        <input
+          id="lastName"
+          class="input__field"
+          type="text"
+          formControlName="lastName"
+          placeholder="Nazwisko"
+          autocomplete="family-name"
+        />
+        <span class="input__icon" aria-hidden="true">
+          <app-form-icon name="user"></app-form-icon>
+        </span>
+      </div>
+    </div>
   </div>
 
-  <!-- Hasło -->
-  <label class="signup__label" for="password">Hasło</label>
-  <div class="input">
-    <input
-      id="password"
-      class="input__field"
-      [type]="hide ? 'password' : 'text'"
-      formControlName="password"
-      placeholder="Password"
-      autocomplete="current-password"
-    />
-    <button type="button" class="input__icon input__icon--btn" (click)="togglePassword()" aria-label="Pokaż/ukryj hasło">
-      <!-- oko (outline) -->
-      <svg *ngIf="hide" viewBox="0 0 24 24" width="24" height="24">
-        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
-              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
-        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
-      </svg>
-      <svg *ngIf="!hide" viewBox="0 0 24 24" width="24" height="24">
-        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
-              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
-        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
-        <line x1="3" y1="21" x2="21" y2="3" stroke="#D7D7D7" stroke-width="1.5"/>
-      </svg>
-    </button>
+  <!-- E-mail i Numer telefonu w jednym rzędzie -->
+  <div class="signup__row">
+    <div class="signup__field">
+      <label class="signup__label" for="email">Email</label>
+      <div class="input">
+        <input
+          id="email"
+          class="input__field"
+          type="email"
+          formControlName="email"
+          placeholder="Email"
+          autocomplete="email"
+        />
+        <span class="input__icon" aria-hidden="true">
+          <app-form-icon name="email"></app-form-icon>
+        </span>
+      </div>
+      <span class="signup__error" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['required']">
+        Email jest wymagany
+      </span>
+      <span class="signup__error" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['email']">
+        Podaj poprawny adres email
+      </span>
+    </div>
+
+    <div class="signup__field">
+      <label class="signup__label" for="phone">Numer telefonu</label>
+      <div class="input">
+        <input
+          id="phone"
+          class="input__field"
+          type="tel"
+          formControlName="phone"
+          placeholder="+48 123 456 789"
+          autocomplete="tel"
+        />
+        <span class="input__icon" aria-hidden="true">
+          <app-form-icon name="phone"></app-form-icon>
+        </span>
+      </div>
+      <span class="signup__error" *ngIf="form.get('phone')?.touched && form.get('phone')?.errors?.['pattern']">
+        Podaj poprawny numer telefonu
+      </span>
+    </div>
+  </div>
+
+  <!-- Hasło i Potwierdź hasło w jednym rzędzie -->
+  <div class="signup__row">
+    <div class="signup__field">
+      <label class="signup__label" for="password">Hasło</label>
+      <div class="input">
+        <input
+          id="password"
+          class="input__field"
+          [type]="hidePassword ? 'password' : 'text'"
+          formControlName="password"
+          placeholder="Hasło (min. 8 znaków)"
+          autocomplete="new-password"
+        />
+        <button type="button" class="input__icon input__icon--btn" (click)="togglePassword()" aria-label="Pokaż/ukryj hasło">
+          <app-form-icon [name]="hidePassword ? 'eye' : 'eye-off'"></app-form-icon>
+        </button>
+      </div>
+      <span class="signup__error" *ngIf="form.get('password')?.touched && form.get('password')?.errors?.['required']">
+        Hasło jest wymagane
+      </span>
+      <span class="signup__error" *ngIf="form.get('password')?.touched && form.get('password')?.errors?.['minlength']">
+        Hasło musi mieć minimum 8 znaków
+      </span>
+    </div>
+
+    <div class="signup__field">
+      <label class="signup__label" for="confirmPassword">Potwierdź hasło</label>
+      <div class="input">
+        <input
+          id="confirmPassword"
+          class="input__field"
+          [type]="hideConfirmPassword ? 'password' : 'text'"
+          formControlName="confirmPassword"
+          placeholder="Potwierdź hasło"
+          autocomplete="new-password"
+        />
+        <button type="button" class="input__icon input__icon--btn" (click)="toggleConfirmPassword()" aria-label="Pokaż/ukryj hasło">
+          <app-form-icon [name]="hideConfirmPassword ? 'eye' : 'eye-off'"></app-form-icon>
+        </button>
+      </div>
+      <span class="signup__error" *ngIf="form.get('confirmPassword')?.touched && form.get('confirmPassword')?.errors?.['required']">
+        Potwierdzenie hasła jest wymagane
+      </span>
+      <span class="signup__error" *ngIf="form.get('confirmPassword')?.touched && form.errors?.['passwordMismatch']">
+        Hasła nie są identyczne
+      </span>
+    </div>
   </div>
 
   <!-- Akceptuj -->
   <div class="signup__actions">
-<app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+    <app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
   </div>
 </form>

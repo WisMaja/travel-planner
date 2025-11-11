@@ -1,10 +1,8 @@
 <form class="signin" [formGroup]="form" (ngSubmit)="submit()">
-  <!-- Tytuł -->
-  <h2 class="signin__title">Sing in</h2>
+  <h2 class="signin__title">Logowanie</h2>
 
-  <!-- E-mail -->
   <label class="signin__label" for="email">Email</label>
-  <div class="input" >
+  <div class="input">
     <input
       id="email"
       class="input__field"
@@ -12,16 +10,20 @@
       formControlName="email"
       placeholder="Email"
       autocomplete="email"
+      [attr.aria-invalid]="form.get('email')?.invalid && form.get('email')?.touched"
+      [attr.aria-describedby]="form.get('email')?.invalid && form.get('email')?.touched ? (form.get('email')?.errors?.['required'] ? 'email-error' : 'email-error-format') : null"
     />
     <span class="input__icon" aria-hidden="true">
-      <!-- ikona koperty (minimalne SVG) -->
-      <svg viewBox="0 0 24 24" width="24" height="24">
-        <path fill="#D7D7D7" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v0.3l-10 7-10-7V6zm0 3.5l9.4 6.6a1 1 0 0 0 1.2 0L22 9.5V18a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5z"/>
-      </svg>
+      <app-form-icon name="email"></app-form-icon>
     </span>
   </div>
+  <span id="email-error" class="signin__error" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['required']">
+    Email jest wymagany
+  </span>
+  <span id="email-error-format" class="signin__error" *ngIf="form.get('email')?.touched && form.get('email')?.errors?.['email']">
+    Podaj poprawny adres email
+  </span>
 
-  <!-- Hasło -->
   <label class="signin__label" for="password">Hasło</label>
   <div class="input">
     <input
@@ -31,25 +33,22 @@
       formControlName="password"
       placeholder="Password"
       autocomplete="current-password"
+      [attr.aria-invalid]="form.get('password')?.invalid && form.get('password')?.touched"
+      [attr.aria-describedby]="form.get('password')?.invalid && form.get('password')?.touched ? (form.get('password')?.errors?.['required'] ? 'password-error' : 'password-error-length') : null"
     />
     <button type="button" class="input__icon input__icon--btn" (click)="togglePassword()" aria-label="Pokaż/ukryj hasło">
-      <!-- oko (outline) -->
-      <svg *ngIf="hide" viewBox="0 0 24 24" width="24" height="24">
-        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
-              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
-        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
-      </svg>
-      <svg *ngIf="!hide" viewBox="0 0 24 24" width="24" height="24">
-        <path fill="none" stroke="#D7D7D7" stroke-width="1.5"
-              d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/>
-        <circle cx="12" cy="12" r="3" fill="none" stroke="#D7D7D7" stroke-width="1.5"/>
-        <line x1="3" y1="21" x2="21" y2="3" stroke="#D7D7D7" stroke-width="1.5"/>
-      </svg>
+      <app-form-icon [name]="hide ? 'eye' : 'eye-off'"></app-form-icon>
     </button>
   </div>
+  <span id="password-error" class="signin__error" *ngIf="form.get('password')?.touched && form.get('password')?.errors?.['required']">
+    Hasło jest wymagane
+  </span>
 
-  <!-- Akceptuj -->
   <div class="signin__actions">
-<app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+    <app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+  </div>
+  
+  <div class="signin__forgot-password">
+    <a routerLink="/forgot-password" class="signin__forgot-link">Zapomniałeś hasła?</a>
   </div>
 </form>

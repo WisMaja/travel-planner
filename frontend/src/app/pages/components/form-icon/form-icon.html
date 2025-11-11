@@ -1,0 +1,22 @@
+<svg [attr.viewBox]="getViewBox()" [attr.width]="size" [attr.height]="size">
+  <ng-container [ngSwitch]="name">
+    <!-- Email, User, Phone icons -->
+    <path *ngSwitchCase="'email'" [attr.fill]="color" [attr.d]="getIconPath()"></path>
+    <path *ngSwitchCase="'user'" [attr.fill]="color" [attr.d]="getIconPath()"></path>
+    <path *ngSwitchCase="'phone'" [attr.fill]="color" [attr.d]="getIconPath()"></path>
+    
+    <!-- Eye icon (visible) -->
+    <g *ngSwitchCase="'eye'" [attr.stroke]="color" fill="none" stroke-width="1.5">
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+      <circle cx="12" cy="12" r="3" fill="none"></circle>
+    </g>
+    
+    <!-- Eye-off icon (hidden) -->
+    <g *ngSwitchCase="'eye-off'" [attr.stroke]="color" fill="none" stroke-width="1.5">
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+      <circle cx="12" cy="12" r="3" fill="none"></circle>
+      <line x1="3" y1="21" x2="21" y2="3"></line>
+    </g>
+  </ng-container>
+</svg>
+

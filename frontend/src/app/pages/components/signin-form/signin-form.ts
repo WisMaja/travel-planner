@@ -1,17 +1,18 @@
 import { Component } from '@angular/core';
 import { SharedImports } from '../../../shared/shared-imports/shared-imports'; 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-
+import { FormIcon } from '../form-icon/form-icon';
 
 @Component({
   selector: 'app-signin-form',
   standalone: true,
-  imports: [SharedImports, ReactiveFormsModule],
+  imports: [SharedImports, ReactiveFormsModule, FormIcon],
   templateUrl: './signin-form.html',
   styleUrl: './signin-form.scss',
 })
 export class SigninForm {
   hide = true;
+  isLoading = false;
   form;
 
   constructor(private fb: FormBuilder) {
@@ -26,11 +27,14 @@ export class SigninForm {
       this.form.markAllAsTouched();
       return;
     }
+    
+    this.isLoading = true;
     const { email, password } = this.form.value;
-      console.log('Sign in:', email, password);
-    }
+    
 
-    togglePassword() {
-      this.hide = !this.hide;
-    }
+  }
+
+  togglePassword() {
+    this.hide = !this.hide;
+  }
 }

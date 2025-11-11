@@ -37,5 +37,6 @@ export class Button {
     // jeśli ustawiono trasę — przejdź
     if (this.navigateTo) {
       this.router.navigate([this.navigateTo]);
-    }}
+    }
   }
+}
