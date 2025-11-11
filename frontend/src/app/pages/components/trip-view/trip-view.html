@@ -1,0 +1,18 @@
+<div class="trip-view" (click)="onCardClick()">
+  <div class="trip-view__image">
+    <img 
+      *ngIf="imageUrl && !imageError" 
+      [src]="imageUrl" 
+      [alt]="title || 'Trip'"
+      (error)="onImageError()" />
+  </div>
+  <div class="trip-view__information">
+    <div class="trip-view__where" *ngIf="where">{{ where }}</div>
+    <div class="trip-view__date" *ngIf="date">
+      <app-form-icon name="calendar" [size]="12" color="#000000"></app-form-icon>
+      <span>{{ date }}</span>
+    </div>
+    <div class="trip-view__title" *ngIf="title">{{ title }}</div>
+  </div>
+</div>
+

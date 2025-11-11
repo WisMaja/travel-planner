@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-export type IconName = 'email' | 'user' | 'phone' | 'eye' | 'eye-off';
+export type IconName = 'email' | 'user' | 'phone' | 'eye' | 'eye-off' | 'plus' | 'sort' | 'calendar';
 
 @Component({
   selector: 'app-form-icon',
