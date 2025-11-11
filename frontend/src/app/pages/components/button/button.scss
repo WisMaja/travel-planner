@@ -87,21 +87,33 @@
 /* Wymiary z projektu: 80x40, padding 4px 11px, białe tło, cień, radius 5px */
 .btn--basic-accept {
   display: inline-flex;
-  gap: 10px;
+  gap: 4px;
   padding: 4px 11px;
-  width: 80px;
+  width: auto;
+  min-width: 80px;
   height: 40px;
   background: #FFFFFF;
   box-shadow: 4px 4px 5px 1px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
+  border-radius: 10px;
 
   .btn__label {
-    width: 43px; height: 16px;
     font-family: 'Enriqueta', serif;
-    font-style: normal; font-weight: 400;
-    font-size: 12px; line-height: 16px;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 20px;
     color: #2F2F2F;
     text-align: center;
+    white-space: nowrap;
+  }
+
+  [icon] {
+    display: inline-flex;
+    width: 15px;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 }
 
