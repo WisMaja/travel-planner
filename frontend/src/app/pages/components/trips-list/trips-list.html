@@ -1,1 +1,28 @@
-<p>trips-list works!</p>
+<!-- Trips List -->
+<div class="trips-list" *ngIf="trips.length > 0">
+  <app-trip-view 
+    *ngFor="let trip of trips" 
+    [where]="trip.where"
+    [date]="trip.date"
+    [title]="trip.title"
+    [imageUrl]="trip.imageUrl"
+    [navigateTo]="navigateTo"
+    (clicked)="onTripClick(trip.id)">
+  </app-trip-view>
+</div>
+
+<!-- Empty State -->
+<div class="trips-list__empty-state" *ngIf="trips.length === 0">
+  <div class="empty-state__icon">✈️</div>
+  <h3 class="empty-state__title">{{ emptyStateTitle }}</h3>
+  <p class="empty-state__message">{{ emptyStateMessage }}</p>
+  <app-button 
+    variant="basic-accept" 
+    [label]="emptyStateButtonLabel" 
+    [navigateTo]="emptyStateButtonNavigateTo" 
+    class="empty-state__button">
+    <span icon>
+      <app-form-icon name="plus" [size]="15" color="#52679C"></app-form-icon>
+    </span>
+  </app-button>
+</div>
