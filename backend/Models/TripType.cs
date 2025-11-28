@@ -1,13 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace backend.Models
 {
+    /// <summary>
+    /// Model reprezentujący typ podróży
+    /// </summary>
     public class TripType
     {
-       public Guid TripTypeId { get; set; }  
-        public string? Name { get; set; }  
+        /// <summary>
+        /// Identyfikator typu podróży (klucz główny)
+        /// </summary>
+        public Guid TripTypeId { get; set; }
+        
+        /// <summary>
+        /// Nazwa typu podróży (np. "Business", "Vacation", "Adventure")
+        /// </summary>
+        public string? Name { get; set; }
     }
 }
