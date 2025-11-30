@@ -26,10 +26,6 @@ namespace backend.Connection
         {
             base.OnModelCreating(modelBuilder);
 
-            // ============================================
-            // KONFIGURACJA KLAUCZY GŁÓWNYCH
-            // ============================================
-            
             modelBuilder.Entity<Users>()
                 .HasKey(u => u.UsersId);
 
@@ -60,10 +56,8 @@ namespace backend.Connection
             modelBuilder.Entity<TripType>()
                 .HasKey(tt => tt.TripTypeId);
 
-            // ============================================
             // MAPOWANIE NAZW TABEL (jeśli różnią się od nazw klas)
-            // ============================================
-            
+  
             // Mapowanie PlansChecklist na tabelę PlanChecklist
             modelBuilder.Entity<PlansChecklist>()
                 .ToTable("PlanChecklist");
@@ -72,9 +66,7 @@ namespace backend.Connection
             modelBuilder.Entity<PlansBasicInfo>()
                 .ToTable("PlanBasicInfo");
 
-            // ============================================
             // KONFIGURACJA NULLABLE POL
-            // ============================================
             
             // Plans - DeletedAtUtc może być null
             modelBuilder.Entity<Plans>()
@@ -120,9 +112,7 @@ namespace backend.Connection
                 .Property(pb => pb.EndTime)
                 .IsRequired(false);
 
-            // ============================================
-            // KONFIGURACJA TYPÓW DANYCH
-            // ============================================
+            // KONFIGURACJA TYPÓW DANYCH  
             
             // PlansBookings - konfiguracja dat i czasu
             modelBuilder.Entity<PlansBookings>()
