@@ -1,0 +1,103 @@
+<div class="find-places">
+  <!-- Header Section -->
+  <div class="find-places__header">
+    <h1 class="find-places__title">Znajdź miejsca</h1>
+    <p class="find-places__subtitle">Odkryj restauracje, hotele, atrakcje i więcej w okolicy</p>
+  </div>
+
+  <!-- Search Section -->
+  <div class="find-places__search">
+    <app-search-bar
+      placeholder="Szukaj miejsc, adresów, kategorii..."
+      [value]="searchQuery"
+      (valueChange)="onSearchChange($event)">
+    </app-search-bar>
+  </div>
+
+  <!-- Category Filters -->
+  <div class="find-places__categories">
+    <app-button
+      *ngFor="let category of categories"
+      [variant]="activeCategory === category ? 'filter-active' : 'filter'"
+      [label]="categoryLabels[category]"
+      (clicked)="onCategoryChange(category)">
+    </app-button>
+  </div>
+
+  <!-- Main Content: Map and Results -->
+  <div class="find-places__content">
+    <!-- Map Container -->
+    <div class="find-places__map-container">
+      <div class="map-placeholder">
+        <div class="map-placeholder__icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="rgba(82, 103, 156, 0.3)"/>
+          </svg>
+        </div>
+        <p class="map-placeholder__text">Mapa Google</p>
+        <p class="map-placeholder__subtext">Implementacja mapy zostanie dodana później</p>
+      </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="find-places__results">
+      <div class="results-header">
+        <h2 class="results-header__title">
+          Znalezione miejsca
+          <span class="results-header__count">({{ filteredPlaces.length }})</span>
+        </h2>
+      </div>
+
+      <div class="results-list" *ngIf="filteredPlaces.length > 0; else emptyState">
+        <div 
+          class="place-card" 
+          *ngFor="let place of filteredPlaces"
+          (click)="onPlaceClick(place.id)">
+          <div class="place-card__image" *ngIf="place.imageUrl">
+            <img [src]="place.imageUrl" [alt]="place.name" />
+          </div>
+          <div class="place-card__content">
+            <div class="place-card__header">
+              <h3 class="place-card__name">{{ place.name }}</h3>
+              <div class="place-card__rating">
+                <span class="rating__value">{{ place.rating }}</span>
+                <span class="rating__icon">⭐</span>
+                <span class="rating__reviews">({{ place.reviews }})</span>
+              </div>
+            </div>
+            <p class="place-card__address">
+              <app-form-icon name="location" [size]="14" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+              {{ place.address }}
+            </p>
+            <div class="place-card__footer">
+              <span class="place-card__category">{{ categoryLabels[place.category] }}</span>
+              <span class="place-card__distance" *ngIf="place.distance">{{ place.distance }}</span>
+            </div>
+            <div class="place-card__actions" (click)="$event.stopPropagation()">
+              <app-button
+                variant="basic-accept"
+                label="Dodaj do wycieczki"
+                (clicked)="onAddToTrip(place.id)">
+                <span icon>
+                  <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
+                </span>
+              </app-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty-state">
+          <div class="empty-state__icon">🔍</div>
+          <h3 class="empty-state__title">Brak wyników</h3>
+          <p class="empty-state__message">
+            Nie znaleziono miejsc spełniających kryteria wyszukiwania.
+            Spróbuj zmienić filtry lub wpisać inne hasło.
+          </p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+

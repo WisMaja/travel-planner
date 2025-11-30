@@ -1,0 +1,20 @@
+<div class="map-sidebar" [class.open]="isOpen" [class.left]="position === 'left'" [class.right]="position === 'right'" [style.width]="width">
+  <div class="sidebar-header">
+    <h3>Miejsca na mapie</h3>
+    <button class="close-btn" (click)="onClose()" aria-label="Zamknij">
+      <app-form-icon name="x" [size]="20"></app-form-icon>
+    </button>
+  </div>
+  
+  <div class="sidebar-content">
+    <app-google-map
+      [places]="places"
+      [center]="center"
+      [zoom]="zoom"
+      [showControls]="showControls"
+      [autoFitBounds]="autoFitBounds"
+      [displayMode]="'sidebar'">
+    </app-google-map>
+  </div>
+</div>
+

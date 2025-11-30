@@ -1,0 +1,15 @@
+<div class="trips-stats">
+  <div class="stat-item">
+    <span class="stat-item__label">Wszystkie wyjazdy:</span>
+    <span class="stat-item__value">{{ tripsCount }}</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-item__label">Nadchodzące:</span>
+    <span class="stat-item__value">{{ upcomingTripsCount }}</span>
+  </div>
+  <div class="stat-item" *ngIf="nextTrip">
+    <span class="stat-item__label">Najbliższy:</span>
+    <span class="stat-item__value">{{ nextTrip.title }}</span>
+  </div>
+</div>
+

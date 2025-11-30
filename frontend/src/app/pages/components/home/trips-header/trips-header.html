@@ -1,0 +1,36 @@
+<div class="trips-header-wrapper">
+  <div class="trips-header">
+    <h2 class="trips-header__title">{{ title }}</h2>
+
+    <div class="trips-header__filters">
+      <app-button
+        [variant]="activeFilter === 'all' ? 'filter-active' : 'filter'"
+        label="Wszystkie"
+        (clicked)="onFilterChange('all')">
+      </app-button>
+      <app-button
+        [variant]="activeFilter === 'upcoming' ? 'filter-active' : 'filter'"
+        label="Nadchodzące"
+        (clicked)="onFilterChange('upcoming')">
+      </app-button>
+      <app-button
+        [variant]="activeFilter === 'past' ? 'filter-active' : 'filter'"
+        label="Zakończone"
+        (clicked)="onFilterChange('past')">
+      </app-button>
+    </div>
+
+    <app-button variant="basic-accept" label="Sortuj" (clicked)="onSort()" class="trips-header__sort-button">
+      <span icon>
+        <app-form-icon name="sort" [size]="15" color="#52679C"></app-form-icon>
+      </span>
+    </app-button>
+  </div>
+
+  <app-button variant="basic-accept" label="Dodaj wyjazd" [navigateTo]="addButtonNavigateTo" class="trips-header__add-button">
+    <span icon>
+      <app-form-icon name="plus" [size]="15" color="#52679C"></app-form-icon>
+    </span>
+  </app-button>
+</div>
+

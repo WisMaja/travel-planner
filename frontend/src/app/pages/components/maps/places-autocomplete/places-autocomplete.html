@@ -1,0 +1,100 @@
+<div class="places-autocomplete">
+  <div class="places-autocomplete__wrapper">
+    <div class="places-autocomplete__icon">
+      <app-form-icon name="location" [size]="15" color="rgba(82,103,156,0.4)"></app-form-icon>
+    </div>
+    <input
+      #autocompleteInput
+      class="places-autocomplete__input"
+      [class.places-autocomplete__input--error]="errorMessage"
+      type="text"
+      [placeholder]="placeholder"
+      [value]="value"
+      (input)="onInputChange($event)"
+      (keydown.enter)="$event.preventDefault()"
+      (keydown.escape)="clear()"
+      autocomplete="off"
+      [readonly]="!isLoaded"
+      [disabled]="false"
+      aria-label="Wyszukaj miejsce"
+      aria-describedby="places-autocomplete-hint"
+    />
+    <div class="places-autocomplete__actions">
+      <div *ngIf="isLoading" class="places-autocomplete__loading" aria-label="Ładowanie">
+        <div class="spinner"></div>
+      </div>
+      <button 
+        *ngIf="value && !isLoading"
+        class="places-autocomplete__clear"
+        type="button"
+        (click)="clear()"
+        aria-label="Wyczyść">
+        <app-form-icon name="x" [size]="14" color="rgba(82,103,156,0.4)"></app-form-icon>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Error message -->
+  <div *ngIf="errorMessage" class="places-autocomplete__error" role="alert">
+    <app-form-icon name="x" [size]="12" color="#dc3545"></app-form-icon>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Place preview -->
+  <div *ngIf="previewPlace && showPreview" class="places-autocomplete__preview">
+    <div class="preview-header">
+      <h4 class="preview-title">{{ previewPlace.name }}</h4>
+      <button 
+        class="preview-close"
+        type="button"
+        (click)="cancelPreview()"
+        aria-label="Zamknij podgląd">
+        <app-form-icon name="x" [size]="14" color="currentColor"></app-form-icon>
+      </button>
+    </div>
+    
+    <div class="preview-content">
+      <div *ngIf="previewPlace.imageUrl" class="preview-image">
+        <img [src]="previewPlace.imageUrl" [alt]="previewPlace.name" />
+      </div>
+      
+      <div class="preview-details">
+        <div class="preview-address">
+          <app-form-icon name="location" [size]="12" color="rgba(82,103,156,0.7)"></app-form-icon>
+          <span>{{ previewPlace.address }}</span>
+        </div>
+        
+        <div class="preview-meta" *ngIf="previewPlace.rating || previewPlace.userRatingsTotal">
+          <div *ngIf="previewPlace.rating" class="preview-rating">
+            <span class="rating-value">⭐ {{ previewPlace.rating }}</span>
+            <span *ngIf="previewPlace.userRatingsTotal" class="rating-count">
+              ({{ previewPlace.userRatingsTotal }} ocen)
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="preview-actions">
+      <button 
+        class="preview-btn preview-btn--confirm"
+        type="button"
+        (click)="confirmPlaceSelection()">
+        <app-form-icon name="plus" [size]="14" color="currentColor"></app-form-icon>
+        <span>Dodaj miejsce</span>
+      </button>
+      <button 
+        class="preview-btn preview-btn--cancel"
+        type="button"
+        (click)="cancelPreview()">
+        Anuluj
+      </button>
+    </div>
+  </div>
+
+  <!-- Hint -->
+  <div id="places-autocomplete-hint" class="places-autocomplete__hint">
+    Wpisz co najmniej {{ minQueryLength }} znaki, aby rozpocząć wyszukiwanie
+  </div>
+</div>
+

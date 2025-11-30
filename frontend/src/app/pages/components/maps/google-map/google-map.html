@@ -1,0 +1,13 @@
+<div class="google-map-container" 
+     [class.google-map-container--compact]="displayMode === 'compact'"
+     [class.google-map-container--sidebar]="displayMode === 'sidebar'"
+     [class.google-map-container--full]="displayMode === 'full'"
+     [style.width]="width" 
+     [style.height]="height">
+  <div #mapContainer class="map-container-inner"></div>
+  <div class="map-loading" *ngIf="isLoading">
+    <div class="map-loading__spinner"></div>
+    <p class="map-loading__text">Ładowanie mapy...</p>
+  </div>
+</div>
+

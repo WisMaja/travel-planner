@@ -1,0 +1,10 @@
+<nav class="topbar">
+  <ng-container *ngFor="let option of options">
+    <app-button
+      [label]="option"
+      [variant]="isActive(option) ? 'filter-active' : 'filter'"
+      (clicked)="select(option)">
+    </app-button>
+  </ng-container>
+</nav>
+
