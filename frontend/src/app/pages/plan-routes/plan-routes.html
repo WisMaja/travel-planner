@@ -1,17 +1,123 @@
-<p>plan-routes works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
+<div class="routes-view">
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
 
-<app-button
-      label="Edytuj"
-      variant="basic-accept"
-      navigateTo="/plan/routes/edit">
-    </app-button>
+  <div class="routes-view__container">
+    <!-- Content Section -->
+    <div class="routes-view__content-section">
+      <div class="routes-view__content">
+        <!-- Title -->
+        <h1 class="routes-view__title">Trasy między miejscami</h1>
+
+        <!-- Routes List -->
+        <div class="routes-view__routes-list" *ngIf="routes.length > 0; else noRoutes">
+          <div class="route-item" *ngFor="let route of routes; let i = index">
+            <!-- Route Header -->
+            <div class="route-item__header">
+              <div class="route-item__order">{{ route.order || (i + 1) }}</div>
+            </div>
+
+            <!-- Route Path -->
+            <div class="route-item__path">
+              <ng-container *ngFor="let placeId of getRoutePlaces(route); let j = index; let isLast = last">
+                <!-- Place -->
+                <div class="route-item__place" 
+                     [class.route-item__place--from]="j === 0"
+                     [class.route-item__place--to]="isLast"
+                     [class.route-item__place--waypoint]="j > 0 && !isLast">
+                  <div class="route-item__place-content">
+                    <div class="route-item__waypoint-number" *ngIf="j > 0 && !isLast">{{ j }}</div>
+                    <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
+                    <div class="route-item__place-info">
+                      <div class="route-item__place-name">{{ getPlaceName(placeId) }}</div>
+                      <div class="route-item__place-address">{{ getPlaceAddress(placeId) }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Segment Info (transport mode, arrow) -->
+                <div class="route-item__segment" *ngIf="!isLast">
+                  <div class="route-item__segment-info">
+                    <div class="route-item__segment-transport">
+                      <span class="transport-name">{{ getTransportName(getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.transportMode || 'other') }}</span>
+                    </div>
+                    <div class="route-item__segment-details" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])">
+                      <span class="segment-detail" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.duration">
+                        {{ getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.duration }}
+                      </span>
+                      <span class="segment-detail" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.distance">
+                        {{ getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.distance }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="route-item__arrow">→</div>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Route Details -->
+            <div class="route-item__details">
+              <div class="route-item__detail-row">
+                <div class="route-item__detail" *ngIf="route.duration">
+                  <label class="route-item__detail-label">Czas</label>
+                  <div class="route-item__detail-value">{{ route.duration }}</div>
+                </div>
+                <div class="route-item__detail" *ngIf="route.distance">
+                  <label class="route-item__detail-label">Dystans</label>
+                  <div class="route-item__detail-value">{{ route.distance }}</div>
+                </div>
+                <div class="route-item__detail" *ngIf="route.cost">
+                  <label class="route-item__detail-label">Koszt</label>
+                  <div class="route-item__detail-value">{{ route.cost }} {{ route.currency || 'PLN' }}</div>
+                </div>
+              </div>
+              <div class="route-item__notes" *ngIf="route.notes">
+                <label class="route-item__detail-label">Notatki</label>
+                <div class="route-item__detail-value">{{ route.notes }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Routes -->
+        <ng-template #noRoutes>
+          <div class="routes-view__empty">
+            <p>Brak tras w planie</p>
+          </div>
+        </ng-template>
+
+        <!-- Actions -->
+        <div class="routes-view__actions">
+          <app-button
+            variant="basic-accept"
+            label="Edytuj"
+            navigateTo="/plan/routes/edit">
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="routes-view__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+    </div>
+  </div>
+</div>

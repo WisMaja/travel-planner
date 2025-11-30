@@ -1,0 +1,321 @@
+.routes-view {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, rgba(82, 103, 156, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
+  padding: 20px;
+  gap: 20px;
+}
+
+.routes-view__container {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  align-items: flex-start;
+  box-sizing: border-box;
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+  }
+}
+
+.routes-view__content-section {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.routes-view__content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 15px rgba(82, 103, 156, 0.15);
+  border-radius: 20px;
+  width: 100%;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.routes-view__title {
+  font-family: 'Enriqueta', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 36px;
+  color: #474747;
+  margin: 0 0 20px 0;
+  padding: 0;
+  border-bottom: 2px solid rgba(82, 103, 156, 0.1);
+  padding-bottom: 12px;
+}
+
+.routes-view__routes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.route-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(82, 103, 156, 0.05);
+  border: 1px solid rgba(82, 103, 156, 0.15);
+  border-radius: 10px;
+  width: 100%;
+}
+
+.route-item__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.route-item__order {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: #52679C;
+  color: #FFFFFF;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.route-item__transport {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #2F2F2F;
+}
+
+.transport-icon {
+  font-size: 18px;
+}
+
+.transport-name {
+  font-weight: 500;
+}
+
+.route-item__path {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.route-item__place {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.route-item__place-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid rgba(82, 103, 156, 0.1);
+}
+
+.route-item__place--from .route-item__place-content {
+  border-left: 3px solid #52679C;
+}
+
+.route-item__place--to .route-item__place-content {
+  border-left: 3px solid #52679C;
+}
+
+.route-item__place--waypoint .route-item__place-content {
+  border-left: 3px solid rgba(82, 103, 156, 0.5);
+}
+
+.route-item__place-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.route-item__place-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2F2F2F;
+  line-height: 1.4;
+}
+
+.route-item__place-address {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(82, 103, 156, 0.7);
+  line-height: 1.4;
+}
+
+.route-item__waypoint-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  background: rgba(82, 103, 156, 0.1);
+  color: #52679C;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.route-item__segment {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+  padding: 8px 12px;
+  background: rgba(82, 103, 156, 0.03);
+  border-radius: 8px;
+  border-left: 2px solid rgba(82, 103, 156, 0.2);
+}
+
+.route-item__segment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.route-item__segment-transport {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.route-item__segment-details {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: rgba(82, 103, 156, 0.7);
+}
+
+.segment-detail {
+  display: flex;
+  align-items: center;
+}
+
+.route-item__arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #52679C;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+  min-width: 24px;
+}
+
+.route-item__details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(82, 103, 156, 0.1);
+}
+
+.route-item__detail-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.route-item__detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.route-item__detail-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #52679C;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.route-item__detail-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #2F2F2F;
+  padding: 8px 12px;
+  background: rgba(82, 103, 156, 0.05);
+  border-radius: 8px;
+}
+
+.route-item__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+.routes-view__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: rgba(82, 103, 156, 0.6);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+}
+
+.routes-view__actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(82, 103, 156, 0.1);
+  flex-shrink: 0;
+}
+
+.routes-view__map {
+  flex: 1;
+  min-width: 0;
+  height: 600px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 15px rgba(82, 103, 156, 0.15);
+  border-radius: 20px;
+  overflow: hidden;
+}
+

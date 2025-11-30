@@ -1,16 +1,432 @@
-<p>plan-routes-edit works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
-      <app-button
-      label="Akceptuj"
-      variant="basic-accept"
-      navigateTo="/plan/routes">
-    </app-button>
+<div class="routes-edit">
+  <!-- Success/Error Messages -->
+  <div class="message-container" *ngIf="successMessage || errorMessage">
+    <div class="message" [class.message--success]="successMessage" [class.message--error]="errorMessage">
+      <span class="message__text">{{ successMessage || errorMessage }}</span>
+      <button type="button" class="message__close" (click)="dismissMessage()" aria-label="Zamknij">
+        <app-form-icon name="x" [size]="16" color="currentColor"></app-form-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">Potwierdź usunięcie</h3>
+        <button type="button" class="modal__close" (click)="cancelDelete()" aria-label="Zamknij">
+          <app-form-icon name="x" [size]="20" color="currentColor"></app-form-icon>
+        </button>
+      </div>
+      <div class="modal__content">
+        <p>Czy na pewno chcesz usunąć tę trasę? Ta operacja jest nieodwracalna.</p>
+      </div>
+      <div class="modal__actions">
+        <app-button
+          variant="basic-accept"
+          label="Anuluj"
+          (clicked)="cancelDelete()">
+        </app-button>
+        <app-button
+          variant="basic-accept"
+          label="Usuń"
+          (clicked)="confirmDelete()">
+          <span icon>
+            <app-form-icon name="trash" [size]="12" color="#52679C"></app-form-icon>
+          </span>
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Route Modal -->
+  <div class="modal-overlay" *ngIf="showAddRouteModal" (click)="closeRouteModal()">
+    <div class="modal modal--large" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h3 class="modal__title">{{ editingRouteId ? 'Edytuj trasę' : 'Dodaj nową trasę' }}</h3>
+        <button type="button" class="modal__close" (click)="closeRouteModal()" aria-label="Zamknij">
+          <app-form-icon name="x" [size]="20" color="currentColor"></app-form-icon>
+        </button>
+      </div>
+      <div class="modal__content">
+        <form [formGroup]="routeForm" (ngSubmit)="saveRoute()">
+          <!-- From Place -->
+          <div class="modal__input-group">
+            <label class="modal__label" for="from-place">
+              Z miejsca *
+              <span class="label-hint" title="Wybierz miejsce, z którego zaczyna się trasa">ℹ️</span>
+            </label>
+            <select
+              id="from-place"
+              class="modal__input"
+              [class.modal__input--error]="isFieldInvalid('fromPlaceId')"
+              formControlName="fromPlaceId"
+              required>
+              <option value="">Wybierz miejsce...</option>
+              <option *ngFor="let place of filteredPlaces" [value]="place.id">
+                {{ place.name }} - {{ place.address }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="isFieldInvalid('fromPlaceId')">
+              {{ getFieldError('fromPlaceId') }}
+            </div>
+          </div>
+
+          <!-- Waypoints -->
+          <div class="modal__input-group">
+            <div class="waypoints-header">
+              <label class="modal__label">
+                Punkty pośrednie
+                <span class="label-hint" title="Opcjonalne miejsca, przez które przejdzie trasa w kolejności">ℹ️</span>
+              </label>
+              <button
+                type="button"
+                class="waypoint-add-btn"
+                (click)="addWaypoint()"
+                title="Dodaj punkt pośredni">
+                <app-form-icon name="plus" [size]="14" color="#52679C"></app-form-icon>
+                <span>Dodaj punkt</span>
+              </button>
+            </div>
+            <div class="waypoints-list" *ngIf="routeWaypoints.length > 0">
+              <div class="waypoint-item" *ngFor="let waypoint of routeWaypoints; let i = index">
+                <div class="waypoint-item__number">{{ i + 1 }}</div>
+                <div class="waypoint-item__controls">
+                  <button
+                    type="button"
+                    class="waypoint-order-btn"
+                    [disabled]="!canMoveWaypointUp(i)"
+                    (click)="moveWaypointUp(i)"
+                    title="Przenieś wyżej">
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="waypoint-order-btn"
+                    [disabled]="!canMoveWaypointDown(i)"
+                    (click)="moveWaypointDown(i)"
+                    title="Przenieś niżej">
+                    ↓
+                  </button>
+                </div>
+                <select
+                  class="modal__input waypoint-select"
+                  [class.modal__input--error]="isFieldInvalid('waypoints') && getWaypointPlaceId(i) === 0"
+                  [value]="getWaypointPlaceId(i)"
+                  (change)="onWaypointChange(i, +$any($event.target).value)">
+                  <option [value]="0">Wybierz miejsce pośrednie...</option>
+                  <option 
+                    *ngFor="let place of getAvailablePlacesForWaypointAtIndex(i)"
+                    [value]="place.id"
+                    [selected]="getWaypointPlaceId(i) === place.id">
+                    {{ place.name }} - {{ place.address }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="waypoint-remove-btn"
+                  (click)="removeWaypoint(i)"
+                  aria-label="Usuń punkt pośredni"
+                  title="Usuń punkt pośredni">
+                  <app-form-icon name="x" [size]="16" color="#DC3545"></app-form-icon>
+                </button>
+              </div>
+            </div>
+            <p class="waypoints-hint" *ngIf="routeWaypoints.length === 0">
+              Opcjonalnie dodaj punkty pośrednie, przez które przejdzie trasa
+            </p>
+            <div class="field-error" *ngIf="isFieldInvalid('waypoints')">
+              {{ getFieldError('waypoints') }}
+            </div>
+          </div>
+
+          <!-- To Place -->
+          <div class="modal__input-group">
+            <label class="modal__label" for="to-place">
+              Do miejsca *
+              <span class="label-hint" title="Wybierz miejsce docelowe trasy">ℹ️</span>
+            </label>
+            <select
+              id="to-place"
+              class="modal__input"
+              [class.modal__input--error]="isFieldInvalid('toPlaceId')"
+              formControlName="toPlaceId"
+              required>
+              <option value="">Wybierz miejsce...</option>
+              <option *ngFor="let place of filteredPlaces" [value]="place.id">
+                {{ place.name }} - {{ place.address }}
+              </option>
+            </select>
+            <div class="field-error" *ngIf="isFieldInvalid('toPlaceId')">
+              {{ getFieldError('toPlaceId') }}
+            </div>
+          </div>
+
+          <!-- Transport Mode -->
+          <div class="modal__input-group">
+            <label class="modal__label">
+              Środek transportu *
+              <span class="label-hint" title="Wybierz sposób podróży">ℹ️</span>
+            </label>
+            <div class="transport-modes">
+              <button
+                type="button"
+                *ngFor="let mode of transportModes"
+                class="transport-mode-btn"
+                [class.transport-mode-btn--active]="routeForm.get('transportMode')?.value === mode.id"
+                (click)="routeForm.patchValue({ transportMode: mode.id })"
+                [title]="mode.name">
+                <span class="transport-mode-btn__icon">{{ mode.icon }}</span>
+                <span class="transport-mode-btn__name">{{ mode.name }}</span>
+              </button>
+            </div>
+            <input type="hidden" formControlName="transportMode">
+            <div class="field-error" *ngIf="isFieldInvalid('transportMode')">
+              {{ getFieldError('transportMode') }}
+            </div>
+          </div>
+
+          <!-- Duration -->
+          <div class="modal__input-group">
+            <label class="modal__label" for="duration">
+              Czas podróży *
+              <span class="label-hint" title="Format: 2h 30min lub 45min">ℹ️</span>
+            </label>
+            <input
+              type="text"
+              id="duration"
+              class="modal__input"
+              [class.modal__input--error]="isFieldInvalid('duration')"
+              formControlName="duration"
+              placeholder="np. 2h 30min, 45min"
+              required>
+            <div class="field-error" *ngIf="isFieldInvalid('duration')">
+              {{ getFieldError('duration') }}
+            </div>
+          </div>
+
+          <!-- Distance -->
+          <div class="modal__input-group">
+            <label class="modal__label" for="distance">
+              Dystans
+              <span class="label-hint" title="Opcjonalny - całkowita długość trasy">ℹ️</span>
+            </label>
+            <input
+              type="text"
+              id="distance"
+              class="modal__input"
+              formControlName="distance"
+              placeholder="np. 150 km">
+          </div>
+
+          <!-- Cost -->
+          <div class="modal__input-group modal__input-group--inline">
+            <div class="modal__input-group">
+              <label class="modal__label" for="cost">Koszt</label>
+              <input
+                type="number"
+                id="cost"
+                class="modal__input"
+                formControlName="cost"
+                placeholder="0.00"
+                step="0.01"
+                min="0">
+            </div>
+            <div class="modal__input-group">
+              <label class="modal__label" for="currency">Waluta</label>
+              <select
+                id="currency"
+                class="modal__input"
+                formControlName="currency">
+                <option *ngFor="let curr of currencies" [value]="curr">{{ curr }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="modal__input-group">
+            <label class="modal__label" for="notes">
+              Notatki
+              <span class="label-hint" title="Opcjonalne - dodatkowe informacje, np. numery biletów, godziny odjazdu">ℹ️</span>
+            </label>
+            <textarea
+              id="notes"
+              class="modal__textarea"
+              formControlName="notes"
+              placeholder="Dodatkowe informacje o trasie, np. numery biletów, godziny odjazdu, uwagi..."
+              rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal__actions">
+        <app-button
+          variant="basic-accept"
+          label="Anuluj"
+          (clicked)="closeRouteModal()">
+        </app-button>
+        <app-button
+          variant="basic-accept"
+          label="{{ editingRouteId ? 'Zapisz' : 'Dodaj' }}"
+          (clicked)="saveRoute()">
+          <span icon>
+            <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
+          </span>
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
+
+  <div class="routes-edit__container">
+    <!-- Content Section -->
+    <div class="routes-edit__content-section">
+      <div class="routes-edit__content">
+        <!-- Title -->
+        <h1 class="routes-edit__title">Trasy między miejscami</h1>
+
+        <!-- Search -->
+        <div class="routes-edit__search">
+          <app-search-bar
+            placeholder="Szukaj tras..."
+            [value]="searchQuery"
+            (valueChange)="onSearchChange($event)">
+          </app-search-bar>
+        </div>
+
+        <!-- Routes List -->
+        <div class="routes-edit__routes-list">
+        <ng-container *ngIf="filteredRoutes.length > 0; else noRoutes">
+          <div class="route-item" *ngFor="let route of filteredRoutes; let i = index">
+            <!-- Route Header -->
+            <div class="route-item__header">
+              <div class="route-item__order">{{ route.order || (i + 1) }}</div>
+              <div class="route-item__actions">
+                <button
+                  type="button"
+                  class="action-btn action-btn--edit"
+                  (click)="openEditRouteModal(route)"
+                  title="Edytuj trasę">
+                  <app-form-icon name="file-text" [size]="14" color="#52679C"></app-form-icon>
+                </button>
+                <button
+                  type="button"
+                  class="action-btn action-btn--delete"
+                  (click)="onRemoveRoute(route.id)"
+                  title="Usuń trasę">
+                  <app-form-icon name="trash" [size]="14" color="#DC3545"></app-form-icon>
+                </button>
+              </div>
+            </div>
+
+            <!-- Route Path -->
+            <div class="route-item__path">
+              <ng-container *ngFor="let placeId of getRoutePlaces(route); let j = index; let isLast = last">
+                <!-- Place -->
+                <div class="route-item__place" 
+                     [class.route-item__place--from]="j === 0"
+                     [class.route-item__place--to]="isLast"
+                     [class.route-item__place--waypoint]="j > 0 && !isLast">
+                  <div class="route-item__place-content">
+                    <div class="route-item__waypoint-number" *ngIf="j > 0 && !isLast">{{ j }}</div>
+                    <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
+                    <div class="route-item__place-info">
+                      <div class="route-item__place-name">{{ getPlaceById(placeId)?.name || 'Nieznane miejsce' }}</div>
+                      <div class="route-item__place-address">{{ getPlaceById(placeId)?.address || '' }}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Segment Info (transport mode, arrow) -->
+                <div class="route-item__segment" *ngIf="!isLast">
+                  <div class="route-item__segment-info">
+                    <div class="route-item__segment-transport">
+                      <span class="transport-name">{{ getTransportModeName(getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.transportMode || route.transportMode) }}</span>
+                    </div>
+                    <div class="route-item__segment-details" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])">
+                      <span class="segment-detail" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.duration">
+                        {{ getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.duration }}
+                      </span>
+                      <span class="segment-detail" *ngIf="getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.distance">
+                        {{ getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])?.distance }}
+                      </span>
+                    </div>
+                    <div class="route-item__segment-details" *ngIf="!getSegmentForPath(route, placeId, getRoutePlaces(route)[j + 1])">
+                      <span class="segment-detail" *ngIf="route.duration">{{ route.duration }}</span>
+                      <span class="segment-detail" *ngIf="route.distance">{{ route.distance }}</span>
+                    </div>
+                  </div>
+                  <div class="route-item__arrow">→</div>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Route Details -->
+            <div class="route-item__details">
+              <div class="route-item__detail-row">
+                <div class="route-item__detail" *ngIf="route.cost">
+                  <label class="route-item__detail-label">Koszt</label>
+                  <div class="route-item__detail-value">{{ route.cost }} {{ route.currency || 'PLN' }}</div>
+                </div>
+              </div>
+              <div class="route-item__notes" *ngIf="route.notes">
+                <label class="route-item__detail-label">Notatki</label>
+                <div class="route-item__detail-value">{{ route.notes }}</div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #noRoutes>
+          <div class="routes-edit__empty">
+            <p *ngIf="searchQuery.trim()">Nie znaleziono tras</p>
+            <p *ngIf="!searchQuery.trim()">Brak tras w planie</p>
+          </div>
+        </ng-template>
+        </div>
+
+        <!-- Actions -->
+        <div class="routes-edit__actions">
+          <app-button
+            variant="basic-accept"
+            label="Dodaj trasę"
+            (clicked)="openAddRouteModal()">
+            <span icon>
+              <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
+            </span>
+          </app-button>
+          <app-button
+            variant="basic-accept"
+            label="Akceptuj"
+            navigateTo="/plan/routes"
+            (clicked)="onSave()">
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="routes-edit__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+    </div>
+  </div>
+</div>
