@@ -1,20 +1,138 @@
-.home {
+.content {
   display: flex;
   flex-direction: column;
-  align-items: center; /* wszystko wyśrodkuj poziomo */
-  text-align: center;
-  padding: 2rem 1rem;
-  gap: 1.5rem; /* odstęp między h1, h3 i .actions */
+  align-items: flex-start;
+  padding: 32px 58px;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(82, 103, 156, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
 }
 
-.actions {
+/* Trips Section */
+.trips {
   display: flex;
-  flex-direction: column; /* ułóż elementy pionowo */
+  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  gap: 1rem; /* odstęp między przyciskami, logo itd. */
+  padding: 20px;
+  gap: 15px;
+  width: 100%;
+  max-width: 1321px;
+  min-height: 305px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 15px rgba(82, 103, 156, 0.15);
+  border-radius: 20px;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+  transition: box-shadow 0.3s ease;
 }
 
-/* opcjonalnie: jeśli chcesz, żeby top-bar był na końcu i miał odstęp */
-app-top-bar {
-  margin-top: 1rem;
+.trips:hover {
+  box-shadow: 0px 6px 20px rgba(82, 103, 156, 0.2);
+}
+
+
+.trips__list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 10px 0px;
+  gap: 15px;
+  width: 100%;
+  max-width: 1301px;
+  min-height: 232px;
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+
+  /* Custom Scrollbar */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(82, 103, 156, 0.1);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(82, 103, 156, 0.3);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(82, 103, 156, 0.5);
+    }
+  }
+}
+
+.trips__empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  width: 100%;
+  min-height: 232px;
+  text-align: center;
+}
+
+.empty-state__icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.6;
+}
+
+.empty-state__title {
+  font-family: 'Enriqueta', serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 32px;
+  color: #000000;
+  margin: 0 0 10px 0;
+}
+
+.empty-state__message {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: rgba(82, 103, 156, 0.7);
+  margin: 0 0 30px 0;
+  max-width: 400px;
+}
+
+.empty-state__button {
+  margin-top: 10px;
+}
+
+/* Map */
+.map {
+  width: 100%;
+  max-width: 1321px;
+  height: 400px;
+  min-height: 400px;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 15px rgba(82, 103, 156, 0.15);
+  border-radius: 20px;
+  overflow: hidden;
+  flex: none;
+  order: 2;
+  align-self: stretch;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0px 6px 20px rgba(82, 103, 156, 0.2);
+  }
 }
