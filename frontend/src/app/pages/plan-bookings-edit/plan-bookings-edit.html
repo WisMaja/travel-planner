@@ -1,16 +1,52 @@
-<p>plan-bookings-edit works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
-      <app-button
-      label="Akceptuj"
-      variant="basic-accept"
-      navigateTo="/plan/bookings">
-    </app-button>
+<div class="bookings-edit">
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
+
+  <div class="bookings-edit__container">
+    <!-- Main Content -->
+    <div class="bookings-edit__content">
+      <h2 class="bookings-edit__title">Rezerwacje</h2>
+      <p class="bookings-edit__subtitle">Zarządzaj rezerwacjami dla swojego planu podróży</p>
+      
+      <div class="bookings-edit__actions">
+        <app-button
+          label="Akceptuj"
+          variant="basic-accept"
+          navigateTo="/plan/bookings">
+        </app-button>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="bookings-edit__map">
+      <app-google-map
+        *ngIf="placesForMap.length > 0"
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="true"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+      <div class="map-placeholder" *ngIf="placesForMap.length === 0">
+        <div class="map-placeholder__icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="rgba(82, 103, 156, 0.3)"/>
+          </svg>
+        </div>
+        <p class="map-placeholder__text">Mapa Google</p>
+        <p class="map-placeholder__subtext">Mapa będzie wyświetlana tutaj</p>
+      </div>
+    </div>
+  </div>
+</div>
