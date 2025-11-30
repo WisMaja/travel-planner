@@ -1,0 +1,42 @@
+<div class="map-test">
+  <div class="map-test__container">
+    <!-- Left Section - Placeholder for future content -->
+    <div class="map-test__left-section">
+      <!-- Pusta sekcja - do wypełnienia w przyszłości -->
+    </div>
+
+    <!-- Right Section - Map -->
+    <div class="map-test__map-section">
+      <!-- Search Bar -->
+      <div class="map-test__search">
+        <app-places-autocomplete
+          placeholder="Wyszukaj miejsce na mapie..."
+          [value]="mapSearchValue"
+          [showPreview]="true"
+          [minQueryLength]="3"
+          (placeSelected)="onPlaceSelected($event)"
+          (placePreview)="onPlacePreview($event)"
+          (valueChange)="onMapSearchValueChange($event)"
+          (error)="onSearchError($event)">
+        </app-places-autocomplete>
+      </div>
+
+      <!-- Map -->
+      <div class="map-test__map">
+        <app-google-map
+          [places]="placesForMap"
+          [routes]="routesForMap"
+          [center]="{ lat: 52.2297, lng: 21.0122 }"
+          [zoom]="6"
+          [height]="'100%'"
+          [width]="'100%'"
+          [autoFitBounds]="true"
+          [showControls]="true"
+          [showRoutes]="true"
+          [displayMode]="'full'">
+        </app-google-map>
+      </div>
+    </div>
+  </div>
+</div>
+
