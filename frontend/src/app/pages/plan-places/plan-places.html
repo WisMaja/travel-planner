@@ -1,17 +1,379 @@
-<p>plan-places works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
+<div class="places-view">
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
 
-<app-button
-      label="Edytuj"
-      variant="basic-accept"
-      navigateTo="/plan/places/edit">
-    </app-button>
+  <div class="places-view__container">
+    <!-- Content Section -->
+    <div class="places-view__content-section">
+      <!-- Main Section: Selected Places (First Priority) -->
+      <div class="places-view__selected-section places-view__selected-section--main">
+      <div class="places-view__header">
+        <h2 class="places-view__title">Dodane miejsca</h2>
+        <p class="places-view__subtitle">{{ selectedPlaces.length }} miejsc w planie</p>
+      </div>
+
+      <!-- Place Type Filters -->
+      <div class="places-view__place-type-filters">
+        <app-button
+          *ngFor="let placeType of placeTypes"
+          [variant]="activePlaceType === placeType.id ? 'filter-active' : 'filter'"
+          [label]="placeType.name"
+          (clicked)="onFilterByPlaceType(placeType.id)">
+        </app-button>
+      </div>
+
+      <!-- Search in Selected Places -->
+      <div class="places-view__search">
+        <app-search-bar
+          placeholder="Szukaj w dodanych miejscach..."
+          [value]="searchQuery"
+          (valueChange)="onSearchChange($event)">
+        </app-search-bar>
+      </div>
+
+      <div class="places-view__selected-places">
+        <ng-container *ngIf="filteredSelectedPlaces.length > 0; else noPlacesSelected">
+          <div class="places-list places-list--hierarchical">
+            <!-- Hierarchical view for "Wszystkie" -->
+            <ng-container *ngIf="activePlaceType === 'all'">
+              <ng-container *ngFor="let place of filteredSelectedPlaces; let i = index">
+                <!-- Place Card Template (reusable, read-only) -->
+                <ng-template #placeCard let-place let-index="index" let-isChild="isChild" let-parentChildren="parentChildren">
+                  <div class="place-card place-card--selected" [class.place-card--child]="isChild">
+                    <div class="place-card__content">
+                      <!-- Compact view for selected places -->
+                      <div class="place-card__compact-info">
+                        <div class="place-card__name-row">
+                          <div class="place-card__name">{{ place.name }}</div>
+                          <div class="place-card__order-number">{{ place.order || (index + 1) }}</div>
+                        </div>
+                        <div class="place-card__address" *ngIf="place.address">
+                          <app-form-icon name="location" [size]="12" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                          {{ place.address }}
+                        </div>
+                        <div class="place-card__meta-info" *ngIf="place.rating || place.priority || (place.tags && place.tags.length > 0)">
+                          <span class="meta-item" *ngIf="place.rating">
+                            ⭐
+                            {{ place.rating }}
+                          </span>
+                          <span class="meta-item" *ngIf="place.priority">
+                            {{ getPriorityLabel(place.priority) }}
+                          </span>
+                          <span class="meta-item meta-item--tags" *ngIf="place.tags && place.tags.length > 0">
+                            <span class="tag-mini" *ngFor="let tag of place.tags.slice(0, 2)">{{ tag }}</span>
+                            <span class="tag-mini" *ngIf="place.tags.length > 2">+{{ place.tags.length - 2 }}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Additional info for cities -->
+                      <div class="place-card__additional-info" *ngIf="place.placeType === 'city' && isChild">
+                        <div class="place-card__stats">
+                          <span class="stat-item" *ngIf="place.children && place.children.length > 0">
+                            <app-form-icon name="location" [size]="14" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                            <span class="stat-value">{{ place.children.length }}</span>
+                            <span class="stat-label">miejsc</span>
+                          </span>
+                          <span class="stat-item" *ngIf="place.priority">
+                            <span class="stat-value">{{ getPriorityLabel(place.priority) }}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- Tags Preview -->
+                      <div class="place-card__tags-preview" *ngIf="place.tags && place.tags.length > 0">
+                        <span class="tag-preview" *ngFor="let tag of place.tags">{{ tag }}</span>
+                      </div>
+
+                      <!-- Expand/Collapse Button (read-only, just to show details) -->
+                      <div class="place-card__expand-controls">
+                        <button 
+                          type="button"
+                          class="expand-btn"
+                          (click)="toggleExpand(place.id)">
+                          <span>{{ place.isExpanded ? 'Ukryj szczegóły' : 'Pokaż szczegóły' }}</span>
+                          <span class="expand-icon">{{ place.isExpanded ? '▲' : '▼' }}</span>
+                        </button>
+                      </div>
+
+                      <!-- Expanded Details (read-only) -->
+                      <div class="place-card__details" *ngIf="place.isExpanded">
+                        <!-- Priority -->
+                        <div class="detail-section" *ngIf="place.priority">
+                          <label class="detail-label">Priorytet</label>
+                          <div class="detail-value">{{ getPriorityLabel(place.priority) }}</div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="detail-section" *ngIf="place.tags && place.tags.length > 0">
+                          <label class="detail-label">Tagi</label>
+                          <div class="tags-container">
+                            <div class="tags-list">
+                              <span class="tag tag--readonly" *ngFor="let tag of place.tags">
+                                {{ tag }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="detail-section" *ngIf="place.notes">
+                          <label class="detail-label">Notatki</label>
+                          <div class="notes-readonly">{{ place.notes }}</div>
+                        </div>
+
+                        <!-- Links -->
+                        <div class="detail-section" *ngIf="place.links && place.links.length > 0">
+                          <label class="detail-label">Linki</label>
+                          <div class="links-list">
+                            <div class="link-item link-item--readonly" *ngFor="let link of place.links">
+                              <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="link-url">{{ link.name }}</a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Container for country: cities and direct places -->
+                  <div class="place-card__container" *ngIf="place.placeType === 'country' && ((place.children && place.children.length > 0) || (getDirectPlacesForCountry(place).length > 0) || isUnassignedPlace(place))">
+                    <!-- Cities in country -->
+                    <div class="place-card__children place-card__children--cities" *ngIf="place.children && place.children.length > 0">
+                      <ng-container *ngFor="let child of place.children; let childIndex = index">
+                        <div class="city-with-places-row">
+                          <!-- Miasto -->
+                          <div class="city-card-wrapper">
+                            <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: child, index: childIndex, isChild: true, parentChildren: place.children }"></ng-container>
+                          </div>
+                          <!-- Kontener z miejscami obok miasta -->
+                          <!-- Miejsca bez wariantu -->
+                          <div class="city-places-container" *ngIf="getPlacesWithoutVariant(child.id).length > 0">
+                            <div class="place-card__children place-card__children--places">
+                              <ng-container *ngFor="let placeChild of getPlacesWithoutVariant(child.id); let placeIndex = index">
+                                <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: placeChild, index: placeIndex, isChild: true, parentChildren: getPlacesWithoutVariant(child.id) }"></ng-container>
+                              </ng-container>
+                            </div>
+                          </div>
+                          
+                          <!-- Warianty dla miasta -->
+                          <ng-container *ngFor="let variantName of getVariantsForParent(child.id)">
+                            <div class="city-places-container city-places-container--variant">
+                              <div class="variant-header">
+                                <h4 class="variant-header__title">
+                                  <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
+                                  {{ variantName }}
+                                  <span class="variant-header__count" *ngIf="getPlacesForVariant(child.id, variantName).length > 0">
+                                    ({{ getPlacesForVariant(child.id, variantName).length }})
+                                  </span>
+                                </h4>
+                              </div>
+                              <div class="place-card__children place-card__children--places" *ngIf="getPlacesForVariant(child.id, variantName).length > 0">
+                                <ng-container *ngFor="let variantPlace of getPlacesForVariant(child.id, variantName); let variantIndex = index">
+                                  <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: variantPlace, index: variantIndex, isChild: true, parentChildren: getPlacesForVariant(child.id, variantName) }"></ng-container>
+                                </ng-container>
+                              </div>
+                              <div class="variant-empty-message" *ngIf="getPlacesForVariant(child.id, variantName).length === 0">
+                                <p>Brak miejsc w tym wariancie</p>
+                              </div>
+                            </div>
+                          </ng-container>
+                          
+                          <!-- Pusty kontener jeśli brak miejsc i wariantów -->
+                          <div class="city-places-container city-places-container--empty" *ngIf="(!child.children || child.children.length === 0) && getVariantsForParent(child.id).length === 0 && getPlacesWithoutVariant(child.id).length === 0">
+                            <p class="empty-places-message">Brak miejsc w tym mieście</p>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                    <!-- Direct places in country (not in any city) -->
+                    <!-- Miejsca bez wariantu -->
+                    <div class="place-card__children place-card__children--direct-places" *ngIf="!isUnassignedPlace(place) && getPlacesWithoutVariant(place.id).length > 0">
+                      <ng-container *ngFor="let directPlace of getPlacesWithoutVariant(place.id); let directIndex = index">
+                        <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: directPlace, index: directIndex, isChild: true, parentChildren: getPlacesWithoutVariant(place.id) }"></ng-container>
+                      </ng-container>
+                    </div>
+                    
+                    <!-- Warianty dla kraju (direct places) -->
+                    <ng-container *ngFor="let variantName of getVariantsForParent(place.id)">
+                      <div class="place-card__children place-card__children--direct-places place-card__children--variant" *ngIf="!isUnassignedPlace(place)">
+                        <div class="variant-header variant-header--country">
+                          <h4 class="variant-header__title">
+                            <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
+                            {{ variantName }}
+                            <span class="variant-header__count" *ngIf="getPlacesForVariant(place.id, variantName).length > 0">
+                              ({{ getPlacesForVariant(place.id, variantName).length }})
+                            </span>
+                          </h4>
+                        </div>
+                        <div class="place-card__children place-card__children--places" *ngIf="getPlacesForVariant(place.id, variantName).length > 0">
+                          <ng-container *ngFor="let variantPlace of getPlacesForVariant(place.id, variantName); let variantIndex = index">
+                            <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: variantPlace, index: variantIndex, isChild: true, parentChildren: getPlacesForVariant(place.id, variantName) }"></ng-container>
+                          </ng-container>
+                        </div>
+                        <div class="variant-empty-message variant-empty-message--country" *ngIf="getPlacesForVariant(place.id, variantName).length === 0">
+                          <p>Brak miejsc w tym wariancie</p>
+                        </div>
+                      </div>
+                    </ng-container>
+                    
+                    <!-- Unassigned places (bez kraju i miasta) -->
+                    <div class="place-card__children place-card__children--unassigned" *ngIf="isUnassignedPlace(place) && getDirectPlacesForCountry(place).length > 0">
+                      <div class="unassigned-places-header">
+                        <h4 class="unassigned-places-header__title">
+                          <app-form-icon name="location" [size]="16" color="#52679C"></app-form-icon>
+                          Miejsca bez przypisania
+                          <span class="unassigned-places-header__count">({{ getDirectPlacesForCountry(place).length }})</span>
+                        </h4>
+                        <p class="unassigned-places-header__message">
+                          Te miejsca nie są przypisane do żadnego kraju ani miasta.
+                        </p>
+                      </div>
+                      <div class="place-card__children place-card__children--places">
+                        <ng-container *ngFor="let unassignedPlace of getDirectPlacesForCountry(place); let unassignedIndex = index">
+                          <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: unassignedPlace, index: unassignedIndex, isChild: true, parentChildren: getDirectPlacesForCountry(place) }"></ng-container>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </div>
+                </ng-template>
+
+                <!-- Render place card -->
+                <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: place, index: i, isChild: false }"></ng-container>
+              </ng-container>
+            </ng-container>
+
+            <!-- Normal list view for other filters -->
+            <ng-container *ngIf="activePlaceType !== 'all'">
+              <div 
+                class="place-card place-card--selected" 
+                *ngFor="let place of filteredSelectedPlaces; let i = index">
+                <div class="place-card__content">
+                  <!-- Compact view for selected places -->
+                  <div class="place-card__compact-info">
+                    <div class="place-card__name-row">
+                      <div class="place-card__name">{{ place.name }}</div>
+                      <div class="place-card__order-number">{{ place.order || (i + 1) }}</div>
+                    </div>
+                    <div class="place-card__address" *ngIf="place.address">
+                      <app-form-icon name="location" [size]="12" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                      {{ place.address }}
+                    </div>
+                    <div class="place-card__meta-info" *ngIf="place.rating || place.priority || (place.tags && place.tags.length > 0)">
+                      <span class="meta-item" *ngIf="place.rating">
+                        ⭐
+                        {{ place.rating }}
+                      </span>
+                      <span class="meta-item" *ngIf="place.priority">
+                        {{ getPriorityLabel(place.priority) }}
+                      </span>
+                      <span class="meta-item meta-item--tags" *ngIf="place.tags && place.tags.length > 0">
+                        <span class="tag-mini" *ngFor="let tag of place.tags.slice(0, 2)">{{ tag }}</span>
+                        <span class="tag-mini" *ngIf="place.tags.length > 2">+{{ place.tags.length - 2 }}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Tags Preview -->
+                  <div class="place-card__tags-preview" *ngIf="place.tags && place.tags.length > 0">
+                    <span class="tag-preview" *ngFor="let tag of place.tags">{{ tag }}</span>
+                  </div>
+
+                  <!-- Expand/Collapse Button -->
+                  <div class="place-card__expand-controls">
+                    <button 
+                      type="button"
+                      class="expand-btn"
+                      (click)="toggleExpand(place.id)">
+                      <span>{{ place.isExpanded ? 'Ukryj szczegóły' : 'Pokaż szczegóły' }}</span>
+                      <span class="expand-icon">{{ place.isExpanded ? '▲' : '▼' }}</span>
+                    </button>
+                  </div>
+
+                  <!-- Expanded Details (read-only) -->
+                  <div class="place-card__details" *ngIf="place.isExpanded">
+                    <!-- Priority -->
+                    <div class="detail-section" *ngIf="place.priority">
+                      <label class="detail-label">Priorytet</label>
+                      <div class="detail-value">{{ getPriorityLabel(place.priority) }}</div>
+                    </div>
+
+                    <!-- Tags -->
+                    <div class="detail-section" *ngIf="place.tags && place.tags.length > 0">
+                      <label class="detail-label">Tagi</label>
+                      <div class="tags-container">
+                        <div class="tags-list">
+                          <span class="tag tag--readonly" *ngFor="let tag of place.tags">
+                            {{ tag }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="detail-section" *ngIf="place.notes">
+                      <label class="detail-label">Notatki</label>
+                      <div class="notes-readonly">{{ place.notes }}</div>
+                    </div>
+
+                    <!-- Links -->
+                    <div class="detail-section" *ngIf="place.links && place.links.length > 0">
+                      <label class="detail-label">Linki</label>
+                      <div class="links-list">
+                        <div class="link-item link-item--readonly" *ngFor="let link of place.links">
+                          <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="link-url">{{ link.name }}</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+
+        <ng-template #noPlacesSelected>
+          <div class="empty-state">
+            <div class="empty-state__icon">📍</div>
+            <h4 class="empty-state__title">Brak wybranych miejsc</h4>
+            <p class="empty-state__message">
+              Nie dodano jeszcze żadnych miejsc do planu.
+            </p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Edit Button -->
+      <div class="places-view__actions">
+        <app-button
+          variant="basic-accept"
+          label="Edytuj"
+          navigateTo="/plan/places/edit">
+        </app-button>
+      </div>
+    </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="places-view__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+    </div>
+  </div>
+</div>
