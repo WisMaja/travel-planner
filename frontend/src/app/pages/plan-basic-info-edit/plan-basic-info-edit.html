@@ -1,16 +1,281 @@
-<p>plan-basic-info-edit works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
-      <app-button
-      label="Akceptuj"
-      variant="basic-accept"
-      navigateTo="/plan/basic-info">
-    </app-button>
+<div class="basic-info-edit">
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
+
+  <div class="basic-info-edit__container">
+    <!-- Form Section -->
+    <div class="basic-info-edit__form-section">
+      <form class="basic-info-form" [formGroup]="form">
+        <!-- Title as editable header -->
+        <input
+          id="title"
+          class="basic-info-form__title-input"
+          type="text"
+          formControlName="title"
+          placeholder="Tytuł wyjazdu..."
+          autocomplete="off"
+        />
+
+        <!-- Location and Destination -->
+        <div class="basic-info-form__row">
+          <div class="basic-info-form__field">
+            <label class="basic-info-form__label" for="location">Lokalizacja</label>
+            <div class="input">
+              <input
+                id="location"
+                class="input__field"
+                type="text"
+                formControlName="location"
+                placeholder="Np. Warszawa, Polska"
+                autocomplete="off"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="map"></app-form-icon>
+              </span>
+            </div>
+          </div>
+
+          <div class="basic-info-form__field">
+            <label class="basic-info-form__label" for="destination">Destynacja</label>
+            <div class="input">
+              <input
+                id="destination"
+                class="input__field"
+                type="text"
+                formControlName="destination"
+                placeholder="Np. Paryż, Francja"
+                autocomplete="off"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="map"></app-form-icon>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="basic-info-form__field">
+          <label class="basic-info-form__label" for="description">Opis</label>
+          <textarea
+            id="description"
+            class="basic-info-form__textarea"
+            formControlName="description"
+            placeholder="Opisz swój wyjazd..."
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Date Range -->
+        <div class="basic-info-form__row">
+          <div class="basic-info-form__field">
+            <label class="basic-info-form__label" for="startDate">Data rozpoczęcia</label>
+            <div class="input">
+              <input
+                id="startDate"
+                class="input__field"
+                type="date"
+                formControlName="startDate"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="calendar"></app-form-icon>
+              </span>
+            </div>
+          </div>
+
+          <div class="basic-info-form__field">
+            <label class="basic-info-form__label" for="endDate">Data zakończenia</label>
+            <div class="input">
+              <input
+                id="endDate"
+                class="input__field"
+                type="date"
+                formControlName="endDate"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="calendar"></app-form-icon>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trip Types (Tags) -->
+        <div class="basic-info-form__field">
+          <label class="basic-info-form__label">Typ wyjazdu</label>
+          <div class="basic-info-form__tags">
+            <!-- Standard Types (only selected) -->
+            <ng-container *ngFor="let type of tripTypes">
+              <button
+                type="button"
+                *ngIf="isTripTypeSelected(type.id)"
+                class="basic-info-form__tag"
+                (click)="onTripTypeToggle(type.id)">
+                {{ type.name }}
+              </button>
+            </ng-container>
+            
+            <!-- Custom Types (only selected) -->
+            <ng-container *ngFor="let customType of customTripTypes">
+              <button
+                type="button"
+                *ngIf="isCustomTypeSelected(customType)"
+                class="basic-info-form__tag basic-info-form__tag--custom"
+                (click)="onCustomTypeToggle(customType)">
+                {{ customType }}
+                <span class="basic-info-form__tag-remove" (click)="removeCustomType(customType); $event.stopPropagation()" aria-label="Usuń typ">×</span>
+              </button>
+            </ng-container>
+            
+            <!-- Add Button with Dropdown -->
+            <div class="basic-info-form__add-wrapper">
+              <button
+                type="button"
+                class="basic-info-form__tag basic-info-form__tag--add"
+                (click)="toggleAddDropdown()"
+                [class.basic-info-form__tag--active]="showAddDropdown">
+                +
+              </button>
+              
+              <!-- Dropdown Menu -->
+              <div class="basic-info-form__dropdown" *ngIf="showAddDropdown">
+                <!-- All Standard Types -->
+                <button
+                  type="button"
+                  *ngFor="let type of tripTypes"
+                  class="basic-info-form__dropdown-item"
+                  [class.basic-info-form__dropdown-item--selected]="isTripTypeSelected(type.id)"
+                  [class.basic-info-form__dropdown-item--disabled]="isTripTypeSelected(type.id)"
+                  (click)="!isTripTypeSelected(type.id) && onSelectUnselectedType(type.id)">
+                  {{ type.name }}
+                  <span *ngIf="isTripTypeSelected(type.id)" class="basic-info-form__dropdown-check">✓</span>
+                </button>
+                
+                <!-- All Custom Types -->
+                <button
+                  type="button"
+                  *ngFor="let customType of customTripTypes"
+                  class="basic-info-form__dropdown-item"
+                  [class.basic-info-form__dropdown-item--selected]="isCustomTypeSelected(customType)"
+                  [class.basic-info-form__dropdown-item--disabled]="isCustomTypeSelected(customType)"
+                  (click)="!isCustomTypeSelected(customType) && onSelectUnselectedCustomType(customType)">
+                  {{ customType }}
+                  <span *ngIf="isCustomTypeSelected(customType)" class="basic-info-form__dropdown-check">✓</span>
+                </button>
+                
+                <!-- Divider -->
+                <div class="basic-info-form__dropdown-divider" *ngIf="tripTypes.length > 0 || customTripTypes.length > 0"></div>
+                
+                <!-- Add Custom Type Option -->
+                <div class="basic-info-form__dropdown-item basic-info-form__dropdown-item--add-custom" *ngIf="!showAddCustomInput">
+                  <button
+                    type="button"
+                    class="basic-info-form__dropdown-add-btn"
+                    (click)="toggleAddCustomInput()">
+                    + Dodaj własny typ
+                  </button>
+                </div>
+                
+                <!-- Custom Input in Dropdown -->
+                <div class="basic-info-form__dropdown-item basic-info-form__dropdown-item--input" *ngIf="showAddCustomInput">
+                  <input
+                    type="text"
+                    class="basic-info-form__custom-input"
+                    [(ngModel)]="newCustomType"
+                    placeholder="Nazwa typu..."
+                    (keydown.enter)="addCustomType(); $event.preventDefault()"
+                    (keydown.escape)="onCustomInputEscape(); toggleAddDropdown()"
+                    (blur)="onCustomInputBlur()"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget -->
+        <div class="basic-info-form__field">
+          <label class="basic-info-form__label" for="budgetAmount">Przewidywany koszt</label>
+          <div class="basic-info-form__budget-row">
+            <div class="input" style="flex: 1;">
+              <input
+                id="budgetAmount"
+                class="input__field"
+                type="number"
+                formControlName="budgetAmount"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="user"></app-form-icon>
+              </span>
+            </div>
+            <div class="input" style="width: 120px; flex-shrink: 0;">
+              <select
+                id="budgetCurrency"
+                class="input__field input__field--select"
+                formControlName="budgetCurrency"
+              >
+                <option *ngFor="let currency of currencies" [value]="currency.code">
+                  {{ currency.code }} ({{ currency.symbol }})
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="basic-info-form__field">
+          <label class="basic-info-form__label" for="coverImgUrl">Zdjęcie okładki</label>
+          <div class="basic-info-form__image-upload">
+            <input
+              id="coverImgUrl"
+              type="file"
+              accept="image/*"
+              (change)="onImageUpload($event)"
+              class="basic-info-form__file-input"
+            />
+            <label for="coverImgUrl" class="basic-info-form__file-label">
+              <app-form-icon name="plus" [size]="20" color="#52679C"></app-form-icon>
+              <span>Wybierz zdjęcie</span>
+            </label>
+            <div class="basic-info-form__image-preview" *ngIf="form.get('coverImgUrl')?.value">
+              <img [src]="form.get('coverImgUrl')?.value" alt="Preview" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="basic-info-form__actions">
+          <app-button
+            variant="basic-accept"
+            label="Akceptuj"
+            navigateTo="/plan/basic-info">
+          </app-button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Map Section -->
+    <div class="basic-info-edit__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+    </div>
+  </div>
+</div>

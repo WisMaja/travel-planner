@@ -1,18 +1,126 @@
-<p>plan-basic-info works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
-     
+<div class="basic-info">
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
 
-<app-button
-      label="Edytuj"
-      variant="basic-accept"
-      navigateTo="/plan/basic-info/edit">
-    </app-button>
+  <div class="basic-info__container">
+    <!-- Content Section -->
+    <div class="basic-info__content-section">
+      <div class="basic-info__content">
+        <!-- Title -->
+        <h1 class="basic-info__title">{{ planData.title || 'Brak tytułu' }}</h1>
+
+        <!-- Location and Destination -->
+        <div class="basic-info__row">
+          <div class="basic-info__field">
+            <label class="basic-info__label">Lokalizacja</label>
+            <div class="basic-info__value">
+              <app-form-icon name="map"></app-form-icon>
+              <span>{{ planData.location || 'Nie podano' }}</span>
+            </div>
+          </div>
+
+          <div class="basic-info__field">
+            <label class="basic-info__label">Destynacja</label>
+            <div class="basic-info__value">
+              <app-form-icon name="map"></app-form-icon>
+              <span>{{ planData.destination || 'Nie podano' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="basic-info__field">
+          <label class="basic-info__label">Opis</label>
+          <div class="basic-info__value basic-info__value--description">
+            <p>{{ planData.description || 'Brak opisu' }}</p>
+          </div>
+        </div>
+
+        <!-- Date Range -->
+        <div class="basic-info__row">
+          <div class="basic-info__field">
+            <label class="basic-info__label">Data rozpoczęcia</label>
+            <div class="basic-info__value">
+              <app-form-icon name="calendar"></app-form-icon>
+              <span>{{ formatDate(planData.startDate) || 'Nie podano' }}</span>
+            </div>
+          </div>
+
+          <div class="basic-info__field">
+            <label class="basic-info__label">Data zakończenia</label>
+            <div class="basic-info__value">
+              <app-form-icon name="calendar"></app-form-icon>
+              <span>{{ formatDate(planData.endDate) || 'Nie podano' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trip Types (Tags) -->
+        <div class="basic-info__field" *ngIf="selectedTripTypes.length > 0 || selectedCustomTypes.length > 0">
+          <label class="basic-info__label">Typ wyjazdu</label>
+          <div class="basic-info__tags">
+            <span 
+              *ngFor="let type of selectedTripTypes" 
+              class="basic-info__tag">
+              {{ type.name }}
+            </span>
+            <span 
+              *ngFor="let customType of selectedCustomTypes" 
+              class="basic-info__tag basic-info__tag--custom">
+              {{ customType }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Budget -->
+        <div class="basic-info__field" *ngIf="planData.budgetAmount">
+          <label class="basic-info__label">Przewidywany koszt</label>
+          <div class="basic-info__value">
+            <app-form-icon name="user"></app-form-icon>
+            <span>{{ planData.budgetAmount }} {{ planData.budgetCurrency }} ({{ currencySymbol }})</span>
+          </div>
+        </div>
+
+        <!-- Cover Image -->
+        <div class="basic-info__field" *ngIf="planData.coverImgUrl">
+          <label class="basic-info__label">Zdjęcie okładki</label>
+          <div class="basic-info__image">
+            <img [src]="planData.coverImgUrl" alt="Zdjęcie okładki" />
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="basic-info__actions">
+          <app-button
+            variant="basic-accept"
+            label="Edytuj"
+            navigateTo="/plan/basic-info/edit">
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map Section -->
+    <div class="basic-info__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
+    </div>
+  </div>
+</div>
