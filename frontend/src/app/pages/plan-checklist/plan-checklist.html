@@ -1,11 +1,368 @@
-<p>plan-checklist works!</p>
-<top-bar-plan
-  [steps]="[
-    { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
-    { label: 'Miejsca',     to: '/plan/places', exact: false },
-    { label: 'Trasy',       to: '/plan/routes', exact: false },
-    { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
-    { label: 'Checklist',   to: '/plan/checklist', exact: false },
-    { label: 'Podgląd',     to: '/plan/overview', exact: false }
-  ]">
-</top-bar-plan>
+<div class="checklist-view">
+  <!-- Top Bar with Steps -->
+  <top-bar-plan
+    [steps]="[
+      { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
+      { label: 'Miejsca',     to: '/plan/places', exact: false },
+      { label: 'Trasy',       to: '/plan/routes', exact: false },
+      { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
+      { label: 'Checklist',   to: '/plan/checklist', exact: false },
+      { label: 'Podgląd',     to: '/plan/overview', exact: false }
+    ]">
+  </top-bar-plan>
+
+  <div class="checklist-view__container">
+    <!-- Header -->
+    <div class="checklist-view__header">
+      <div class="checklist-view__header-top">
+        <div class="checklist-view__header-content">
+          <h2 class="checklist-view__title">Checklist podróży</h2>
+          <p class="checklist-view__subtitle">
+            {{ getCheckedItems() }} z {{ getTotalItems() }} zadań ukończonych
+          </p>
+        </div>
+        <div class="checklist-view__progress">
+          <div class="progress-bar">
+            <div class="progress-bar__fill" [style.width.%]="getProgressPercentage()"></div>
+          </div>
+          <span class="progress-percentage">{{ getProgressPercentage() }}%</span>
+        </div>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="checklist-view__controls">
+        <div class="checklist-view__search-filters">
+          <div class="checklist-view__search">
+            <app-search-bar
+              placeholder="Szukaj w checklist..."
+              [value]="searchQuery"
+              (valueChange)="onSearchChange($event)">
+            </app-search-bar>
+          </div>
+          <div class="checklist-view__filters">
+            <app-button
+              [variant]="filterType === 'all' ? 'filter-active' : 'filter'"
+              label="Wszystkie"
+              (clicked)="onFilterChange('all')">
+            </app-button>
+            <app-button
+              [variant]="filterType === 'checked' ? 'filter-active' : 'filter'"
+              label="Zaznaczone"
+              (clicked)="onFilterChange('checked')">
+            </app-button>
+            <app-button
+              [variant]="filterType === 'unchecked' ? 'filter-active' : 'filter'"
+              label="Niezaznaczone"
+              (clicked)="onFilterChange('unchecked')">
+            </app-button>
+          </div>
+        </div>
+        <div class="checklist-view__expand-controls">
+          <app-button
+            variant="filter"
+            label="Rozwiń wszystkie"
+            (clicked)="expandAll()">
+          </app-button>
+          <app-button
+            variant="filter"
+            label="Zwiń wszystkie"
+            (clicked)="collapseAll()">
+          </app-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories Grid -->
+    <div class="checklist-categories" *ngIf="hasCategories()">
+      <div 
+        class="checklist-category" 
+        *ngFor="let category of getFilteredCategories()">
+        <div 
+          class="checklist-category__header"
+          (click)="toggleCategory(category.id)">
+          <div class="checklist-category__header-left">
+            <button 
+              type="button"
+              class="checklist-category__toggle"
+              (click)="toggleCategory(category.id); $event.stopPropagation()"
+              [attr.aria-expanded]="category.isExpanded">
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 16 16" 
+                fill="none"
+                [class.checklist-category__toggle-icon--expanded]="category.isExpanded">
+                <path 
+                  d="M4 6L8 10L12 6" 
+                  stroke="currentColor" 
+                  stroke-width="2" 
+                  stroke-linecap="round" 
+                  stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <span class="checklist-category__icon" *ngIf="category.iconType === 'emoji'">{{ category.icon }}</span>
+            <app-form-icon 
+              *ngIf="category.iconType === 'icon' || !category.iconType"
+              [name]="getIconName(category.icon)"
+              [size]="20"
+              color="#52679C"
+              class="checklist-category__icon-svg">
+            </app-form-icon>
+            <h3 class="checklist-category__name">{{ category.name }}</h3>
+            <span class="checklist-category__count">
+              ({{ getCategoryCheckedCount(category) }}/{{ getCategoryTotalCount(category) }})
+            </span>
+          </div>
+          <div class="checklist-category__header-right">
+            <div class="checklist-category__progress">
+              <div class="category-progress-bar">
+                <div 
+                  class="category-progress-bar__fill" 
+                  [style.width.%]="getCategoryProgress(category)">
+                </div>
+              </div>
+            </div>
+            <button 
+              type="button"
+              class="checklist-category__delete"
+              (click)="$event.stopPropagation(); confirmDeleteCategory(category.id)"
+              title="Usuń kategorię">
+              <app-form-icon name="trash" [size]="16" color="rgba(82, 103, 156, 0.6)"></app-form-icon>
+            </button>
+          </div>
+        </div>
+
+        <div 
+          class="checklist-items"
+          *ngIf="category.isExpanded">
+          <div 
+            class="checklist-item"
+            *ngFor="let item of category.items"
+            [class.checklist-item--checked]="item.checked"
+            [class.checklist-item--editing]="editingItemId === item.id">
+            <label class="checklist-item__content">
+              <input 
+                type="checkbox" 
+                class="checklist-item__checkbox"
+                [checked]="item.checked"
+                (change)="toggleItem(category.id, item.id)">
+              <span class="checklist-item__checkmark">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path 
+                    d="M13.5 4.5L6 12L2.5 8.5" 
+                    stroke="currentColor" 
+                    stroke-width="2" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round"/>
+                </svg>
+              </span>
+              <span 
+                class="checklist-item__text"
+                *ngIf="editingItemId !== item.id"
+                (dblclick)="startEditItem(category.id, item.id)">
+                {{ item.text }}
+              </span>
+              <input 
+                type="text"
+                class="checklist-item__edit-input"
+                *ngIf="editingItemId === item.id"
+                [(ngModel)]="editingItemText"
+                (keyup.enter)="saveEditItem(category.id, item.id)"
+                (keyup.escape)="cancelEditItem()"
+                (blur)="saveEditItem(category.id, item.id)"
+                autofocus>
+            </label>
+            <div class="checklist-item__actions">
+              <button 
+                type="button"
+                class="checklist-item__action-btn"
+                *ngIf="editingItemId !== item.id"
+                (click)="startEditItem(category.id, item.id)"
+                title="Edytuj">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path 
+                    d="M11.5 2.5L13.5 4.5M12 8V12.5C12 13.3284 11.3284 14 10.5 14H3.5C2.67157 14 2 13.3284 2 12.5V5.5C2 4.67157 2.67157 4 3.5 4H8M11.5 2.5L8 6M11.5 2.5L14 2L13.5 4.5" 
+                    stroke="rgba(82, 103, 156, 0.6)" 
+                    stroke-width="1.5" 
+                    stroke-linecap="round" 
+                    stroke-linejoin="round"/>
+                </svg>
+              </button>
+              <button 
+                type="button"
+                class="checklist-item__action-btn checklist-item__action-btn--delete"
+                (click)="deleteItem(category.id, item.id)"
+                title="Usuń">
+                <app-form-icon name="trash" [size]="14" color="rgba(220, 53, 69, 0.7)"></app-form-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Item Input -->
+          <div class="checklist-add-item" *ngIf="showAddItemInput[category.id]">
+            <input 
+              type="text"
+              class="checklist-add-item__input"
+              [(ngModel)]="newItemTexts[category.id]"
+              placeholder="Wpisz nowe zadanie..."
+              (keyup.enter)="addItemToCategory(category.id)"
+              (keyup.escape)="cancelAddItem(category.id)"
+              autofocus>
+            <div class="checklist-add-item__actions">
+              <button 
+                type="button"
+                class="checklist-add-item__btn checklist-add-item__btn--add"
+                (click)="addItemToCategory(category.id)"
+                [disabled]="!newItemTexts[category.id]?.trim()">
+                Dodaj
+              </button>
+              <button 
+                type="button"
+                class="checklist-add-item__btn checklist-add-item__btn--cancel"
+                (click)="cancelAddItem(category.id)">
+                Anuluj
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Item Button -->
+          <button 
+            type="button"
+            class="checklist-add-item__trigger"
+            *ngIf="!showAddItemInput[category.id]"
+            (click)="toggleAddItemInput(category.id)">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path 
+                d="M8 3V13M3 8H13" 
+                stroke="currentColor" 
+                stroke-width="2" 
+                stroke-linecap="round"/>
+            </svg>
+            <span>Dodaj zadanie</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="checklist-empty-state" *ngIf="!hasCategories()">
+      <div class="checklist-empty-state__icon">
+        <app-form-icon name="clipboard" [size]="64" color="rgba(82, 103, 156, 0.3)"></app-form-icon>
+      </div>
+      <h3 class="checklist-empty-state__title">Brak list w checklistie</h3>
+      <p class="checklist-empty-state__message">
+        Zacznij od dodania pierwszej listy, aby organizować swoje zadania podróży.
+      </p>
+      <app-button
+        variant="basic-accept"
+        label="Dodaj pierwszą listę"
+        (clicked)="openAddCategoryDialog()">
+      </app-button>
+    </div>
+
+    <!-- Actions -->
+    <div class="checklist-view__actions" *ngIf="hasCategories()">
+      <app-button
+        variant="basic-accept"
+        label="Dodaj nową listę"
+        (clicked)="openAddCategoryDialog()">
+      </app-button>
+    </div>
+  </div>
+
+  <!-- Delete Category Confirmation -->
+  <div class="delete-confirmation-dialog" *ngIf="categoryToDelete" (click)="cancelDeleteCategory()">
+    <div class="delete-confirmation-dialog__content" (click)="$event.stopPropagation()">
+      <h3 class="delete-confirmation-dialog__title">Usunąć kategorię?</h3>
+      <p class="delete-confirmation-dialog__message">
+        Ta operacja usunie kategorię i wszystkie zawarte w niej zadania. Tej akcji nie można cofnąć.
+      </p>
+      <div class="delete-confirmation-dialog__actions">
+        <app-button
+          variant="filter"
+          label="Anuluj"
+          (clicked)="cancelDeleteCategory()">
+        </app-button>
+        <app-button
+          variant="basic-accept"
+          label="Usuń"
+          (clicked)="deleteCategory(categoryToDelete!)">
+        </app-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Category Dialog -->
+  <div class="add-category-dialog" *ngIf="showAddCategoryDialog" (click)="closeAddCategoryDialog()">
+    <div class="add-category-dialog__content" (click)="$event.stopPropagation()">
+      <div class="add-category-dialog__header">
+        <h3 class="add-category-dialog__title">Dodaj nową listę</h3>
+        <button 
+          type="button"
+          class="add-category-dialog__close"
+          (click)="closeAddCategoryDialog()"
+          aria-label="Zamknij">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path 
+              d="M18 6L6 18M6 6l12 12" 
+              stroke="currentColor" 
+              stroke-width="2" 
+              stroke-linecap="round" 
+              stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="add-category-dialog__body">
+        <div class="add-category-form">
+          <label class="add-category-form__label">
+            Nazwa listy
+            <input 
+              type="text"
+              class="add-category-form__input"
+              [(ngModel)]="newCategoryName"
+              placeholder="np. Elektronika, Dokumenty..."
+              (keyup.enter)="addNewCategory()"
+              autofocus>
+          </label>
+
+          <label class="add-category-form__label">
+            Ikona
+            <div class="add-category-form__icon-selector">
+              <select 
+                class="add-category-form__select"
+                [(ngModel)]="newCategoryIcon">
+                <option 
+                  *ngFor="let icon of availableIcons" 
+                  [value]="icon.name">
+                  {{ icon.label }}
+                </option>
+              </select>
+              <div class="add-category-form__icon-preview">
+                <app-form-icon 
+                  [name]="newCategoryIcon"
+                  [size]="24"
+                  color="#52679C">
+                </app-form-icon>
+              </div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="add-category-dialog__footer">
+        <app-button
+          variant="filter"
+          label="Anuluj"
+          (clicked)="closeAddCategoryDialog()">
+        </app-button>
+        <app-button
+          variant="basic-accept"
+          label="Dodaj"
+          (clicked)="addNewCategory()"
+          [disabled]="!newCategoryName.trim()">
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>
