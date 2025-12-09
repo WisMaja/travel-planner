@@ -54,5 +54,8 @@ namespace backend.Models
         /// Data usunięcia konta (UTC) - null jeśli nie usunięty
         /// </summary>
         public DateTime? DeletedAtUtc { get; set; }
+
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiration { get; set; }
     }
 }
