@@ -20,28 +20,32 @@ import { PlanRoutes } from './pages/plan-routes/plan-routes';
 import { PlanRoutesEdit } from './pages/plan-routes-edit/plan-routes-edit';
 import { PlanChecklist } from './pages/plan-checklist/plan-checklist';
 
+// ====== Guards ======
+import { authGuard, loginGuard } from './guards/auth.guard';
+
 export const routes: Routes = [
-  // --- Główne ekrany aplikacji ---
+  // --- Strony autoryzacji (dostępne tylko dla niezalogowanych) ---
   { path: '', redirectTo: 'signin', pathMatch: 'full' },
-  { path: 'signin', component: Signin, data: { animation: 'SigninPage' } },
-  { path: 'signup', component: Signup, data: { animation: 'SignupPage' } },
-  { path: 'home', component: HomePage, data: { animation: 'HomePage' } },
-  { path: 'find-places', component: FindPlaces, data: { animation: 'FindPlacesPage' } },
-  { path: 'map-test', component: MapTest },
+  { path: 'signin', component: Signin, data: { animation: 'SigninPage' }, canActivate: [loginGuard] },
+  { path: 'signup', component: Signup, data: { animation: 'SignupPage' }, canActivate: [loginGuard] },
+  
+  // --- Główne ekrany aplikacji (wymagają logowania) ---
+  { path: 'home', component: HomePage, data: { animation: 'HomePage' }, canActivate: [authGuard] },
+  { path: 'find-places', component: FindPlaces, data: { animation: 'FindPlacesPage' }, canActivate: [authGuard] },
+  { path: 'map-test', component: MapTest, canActivate: [authGuard] },
+  { path: 'settings', component: Settings, canActivate: [authGuard] },
 
-  { path: 'settings', component: Settings },
-
-  // --- Plan: widoki i edycje ---
-  { path: 'plan/overview', component: PlanOverview },
-  { path: 'plan/basic-info', component: PlanBasicInfo },
-  { path: 'plan/basic-info/edit', component: PlanBasicInfoEdit },
-  { path: 'plan/bookings', component: PlanBookings },
-  { path: 'plan/bookings/edit', component: PlanBookingsEdit },
-  { path: 'plan/places', component: PlanPlaces },
-  { path: 'plan/places/edit', component: PlanPlacesEdit },
-  { path: 'plan/routes', component: PlanRoutes },
-  { path: 'plan/routes/edit', component: PlanRoutesEdit },
-  { path: 'plan/checklist', component: PlanChecklist },
+  // --- Plan: widoki i edycje (wymagają logowania) ---
+  { path: 'plan/overview', component: PlanOverview, canActivate: [authGuard] },
+  { path: 'plan/basic-info', component: PlanBasicInfo, canActivate: [authGuard] },
+  { path: 'plan/basic-info/edit', component: PlanBasicInfoEdit, canActivate: [authGuard] },
+  { path: 'plan/bookings', component: PlanBookings, canActivate: [authGuard] },
+  { path: 'plan/bookings/edit', component: PlanBookingsEdit, canActivate: [authGuard] },
+  { path: 'plan/places', component: PlanPlaces, canActivate: [authGuard] },
+  { path: 'plan/places/edit', component: PlanPlacesEdit, canActivate: [authGuard] },
+  { path: 'plan/routes', component: PlanRoutes, canActivate: [authGuard] },
+  { path: 'plan/routes/edit', component: PlanRoutesEdit, canActivate: [authGuard] },
+  { path: 'plan/checklist', component: PlanChecklist, canActivate: [authGuard] },
 
   // --- Strona nieznaleziona (404) ---
   { path: '**', redirectTo: 'signin' },

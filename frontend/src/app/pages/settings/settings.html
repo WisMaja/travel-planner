@@ -1,1 +1,17 @@
-<p>settings works!</p>
+<div class="settings">
+  <h1 class="settings__title">Ustawienia</h1>
+  
+  <div class="settings__content">
+    <div class="settings__section">
+      <h2 class="settings__section-title">Konto</h2>
+      
+      <div class="settings__actions">
+        <app-button 
+          label="Wyloguj się" 
+          variant="secondary"
+          (clicked)="logout()">
+        </app-button>
+      </div>
+    </div>
+  </div>
+</div>

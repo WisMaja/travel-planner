@@ -4,7 +4,6 @@ import { SharedImports } from '../../../../shared/shared-imports/shared-imports'
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormIcon } from '../../ui/form-icon/form-icon';
 import { AuthService } from '../../../../services/auth.service';
-import { TokenStorageService } from '../../../../services/token-storage.service';
 
 @Component({
   selector: 'app-signin-form',
@@ -22,7 +21,6 @@ export class SigninForm {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private tokenStorage: TokenStorageService,
     private router: Router
   ) {
     this.form = this.fb.group({
@@ -49,8 +47,8 @@ export class SigninForm {
     
     this.authService.login({ email, password }).subscribe({
       next: (response: { accessToken: string; refreshToken: string }) => {
-        // Zapisz tokeny do localStorage
-        this.tokenStorage.saveTokens(response.accessToken, response.refreshToken);
+        // Zapisz tokeny przez AuthService
+        this.authService.saveTokens(response.accessToken, response.refreshToken);
         this.isLoading = false;
         // Przekieruj do strony głównej po sukcesie
         this.router.navigate(['/home']);

@@ -1,0 +1,41 @@
+.settings {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.settings__title {
+  font-family: 'Enriqueta', serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: #474747;
+  margin-bottom: 24px;
+}
+
+.settings__content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.settings__section {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.settings__section-title {
+  font-family: 'Enriqueta', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: #474747;
+  margin-bottom: 16px;
+}
+
+.settings__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
