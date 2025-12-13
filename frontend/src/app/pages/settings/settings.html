@@ -5,6 +5,21 @@
     <div class="settings__section">
       <h2 class="settings__section-title">Konto</h2>
       
+      <div class="settings__user-info" *ngIf="!isLoading && userInfo">
+        <div class="settings__user-field">
+          <span class="settings__user-label">Nazwa wyświetlana:</span>
+          <span class="settings__user-value">{{ userInfo.fullName || 'Brak' }}</span>
+        </div>
+        <div class="settings__user-field">
+          <span class="settings__user-label">Email:</span>
+          <span class="settings__user-value">{{ userInfo.email || 'Brak' }}</span>
+        </div>
+      </div>
+      
+      <div class="settings__loading" *ngIf="isLoading">
+        Ładowanie danych...
+      </div>
+      
       <div class="settings__actions">
         <app-button 
           label="Wyloguj się" 

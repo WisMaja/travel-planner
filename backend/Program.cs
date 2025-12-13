@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using backend.Connection;
 using backend.Controllers;
 using backend.Services;
@@ -20,6 +23,28 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IPlansService, PlansService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+// Konfiguracja autoryzacji JWT
+var jwtSecretKey = "e5be8f13-627b-4632-805f-37a86ce0d76d";
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.AddAuthorization();
+
 // Konfiguracja CORS
 builder.Services.AddCors(options =>
 {
@@ -39,6 +64,10 @@ var app = builder.Build();
 
 // Użycie CORS (musi być przed MapControllers)
 app.UseCors("AllowAngularApp");
+
+// Użycie autoryzacji (musi być przed MapControllers)
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseSwagger();
 

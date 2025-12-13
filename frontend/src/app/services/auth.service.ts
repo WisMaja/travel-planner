@@ -20,6 +20,13 @@ export interface TokenResponse {
   refreshToken: string;
 }
 
+export interface UserInfo {
+  id: string;
+  fullName: string | null;
+  email: string | null;
+  profileImageUrl: string | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -134,6 +141,13 @@ export class AuthService {
    */
   saveTokens(accessToken: string, refreshToken: string): void {
     this.tokenStorage.saveTokens(accessToken, refreshToken);
+  }
+
+  /**
+   * Pobiera dane aktualnie zalogowanego użytkownika
+   */
+  getCurrentUser(): Observable<UserInfo> {
+    return this.http.get<UserInfo>(`${environment.apiUrl}/user/me`);
   }
 
   /**
