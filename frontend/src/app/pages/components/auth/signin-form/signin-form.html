@@ -44,8 +44,18 @@
     Hasło jest wymagane
   </span>
 
+  <!-- Komunikat o błędzie -->
+  <div class="signin__error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
   <div class="signin__actions">
-    <app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+    <app-button 
+      [label]="isLoading ? 'Logowanie...' : 'Akceptuj'" 
+      variant="basic-accept"
+      [disabled]="isLoading"
+      type="submit">
+    </app-button>
   </div>
   
   <div class="signin__forgot-password">

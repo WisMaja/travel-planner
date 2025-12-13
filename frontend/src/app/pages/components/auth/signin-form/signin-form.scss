@@ -87,6 +87,15 @@
   display: block;
 }
 
+.signin__error-message {
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  line-height: 12px;
+  color: #d32f2f;
+  margin-top: -2px;
+  margin-bottom: 2px;
+}
+
 .signin__actions {
   display: flex;
   justify-content: flex-start;

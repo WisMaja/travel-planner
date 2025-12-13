@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { SharedImports } from '../../../../shared/shared-imports/shared-imports'; 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormIcon } from '../../ui/form-icon/form-icon';
+import { AuthService } from '../../../../services/auth.service';
+import { TokenStorageService } from '../../../../services/token-storage.service';
 
 @Component({
   selector: 'app-signin-form',
@@ -13,9 +16,15 @@ import { FormIcon } from '../../ui/form-icon/form-icon';
 export class SigninForm {
   hide = true;
   isLoading = false;
+  errorMessage = '';
   form;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private tokenStorage: TokenStorageService,
+    private router: Router
+  ) {
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
@@ -29,9 +38,33 @@ export class SigninForm {
     }
     
     this.isLoading = true;
+    this.errorMessage = '';
     const { email, password } = this.form.value;
     
-
+    if (!email || !password) {
+      this.isLoading = false;
+      this.errorMessage = 'Email i hasło są wymagane';
+      return;
+    }
+    
+    this.authService.login({ email, password }).subscribe({
+      next: (response: { accessToken: string; refreshToken: string }) => {
+        // Zapisz tokeny do localStorage
+        this.tokenStorage.saveTokens(response.accessToken, response.refreshToken);
+        this.isLoading = false;
+        // Przekieruj do strony głównej po sukcesie
+        this.router.navigate(['/home']);
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        if (error.status === 401) {
+          this.errorMessage = 'Nieprawidłowy email lub hasło';
+        } else {
+          this.errorMessage = 'Wystąpił błąd podczas logowania. Spróbuj ponownie.';
+        }
+        console.error('Login error:', error);
+      }
+    });
   }
 
   togglePassword() {
