@@ -18,6 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Rejestracja serwisów
 builder.Services.AddScoped<IPlansService, PlansService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Dodanie kontrolerów
 builder.Services.AddControllers();

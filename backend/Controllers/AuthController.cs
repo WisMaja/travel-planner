@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")] // œcie¿ka: /api/user
+    [Route("api/[controller]")] // ï¿½cieï¿½ka: /api/user
     public class AuthController : ControllerBase
     {
         private ITokenService _tokenService;
@@ -32,7 +32,7 @@ namespace backend.Controllers
         public async Task<IActionResult> RegisterAsync([FromBody] RegisterRequestDto dto)
         {
             var isEmailTaken = _context.Set<Users>().Any(u => u.Email != null && u.Email.Equals(dto.Email));
-            if (isEmailTaken) return Conflict("U¿ytkownik o tym emailu ju¿ istnieje");
+            if (isEmailTaken) return Conflict("Uï¿½ytkownik o tym emailu juï¿½ istnieje");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -40,18 +40,22 @@ namespace backend.Controllers
                 var user = new Users
                 {
                     Email = dto.Email,
+                    DisplayName = dto.Email.Split('@')[0], // UÅ¼yj czÄ™Å›ci przed @ jako DisplayName
+                    RegisteredAtUtc = DateTime.UtcNow,
+                    LastLoginAtUtc = DateTime.UtcNow
                 };
                 user.PasswordHash = new PasswordHasher<Users>().HashPassword(user, dto.Password);
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 return NoContent();
             }
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(StatusCodes.Status500InternalServerError, "B³¹d serwera");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Bï¿½ï¿½d serwera");
             }
         }
 
@@ -123,7 +127,7 @@ namespace backend.Controllers
         #endregion
 
 
-        #region Zmiana has³a
+        #region Zmiana hasï¿½a
         [Authorize]
         [HttpPut("change-password")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -141,9 +145,9 @@ namespace backend.Controllers
             var hasher = new PasswordHasher<Users>();
             var result = hasher.VerifyHashedPassword(user, user.PasswordHash!, dto.CurrentPassword);
             if (result == PasswordVerificationResult.Failed)
-                return BadRequest("Nieprawid³owe aktualne has³o.");
+                return BadRequest("Nieprawidï¿½owe aktualne hasï¿½o.");
 
-            // Walidacja nowego has³a
+            // Walidacja nowego hasï¿½a
             var passwordValidationError = ValidatePassword(dto.NewPassword);
             if (!string.IsNullOrEmpty(passwordValidationError))
                 return BadRequest(passwordValidationError);
@@ -154,7 +158,7 @@ namespace backend.Controllers
             return NoContent();
         }
 
-        // Funkcja waliduj¹ca nowe has³o pod k¹tem bezpieczeñstwa
+        // Funkcja walidujï¿½ca nowe hasï¿½o pod kï¿½tem bezpieczeï¿½stwa
         private string ValidatePassword(string password)
         {
             if (password.Length < 8)
@@ -172,7 +176,7 @@ namespace backend.Controllers
             if (!password.Any(ch => "!@#$%^&*(),.?\":{}|<>".Contains(ch)))
                 return "Password must contain at least one special character";
 
-            return null; // brak b³êdów
+            return null; // brak bï¿½ï¿½dï¿½w
         }
 
 
