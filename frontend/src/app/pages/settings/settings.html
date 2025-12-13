@@ -1,31 +1,61 @@
 <div class="settings">
-  <h1 class="settings__title">Ustawienia</h1>
+  <!-- Header podobny do home-header -->
+  <div class="settings__header">
+    <div class="settings__header-left">
+      <app-logo name="PLANGO"></app-logo>
+      <app-button 
+        variant="basic-accept" 
+        label="Powrót" 
+        navigateTo="/home" 
+        class="settings__back-button">
+      </app-button>
+    </div>
+    <div class="settings__header-right">
+      <app-button 
+        variant="basic-accept" 
+        label="Wyloguj się" 
+        (clicked)="logout()"
+        class="settings__logout-button">
+      </app-button>
+    </div>
+  </div>
   
   <div class="settings__content">
+    <h1 class="settings__title">Ustawienia</h1>
+    
+    <!-- Sekcja informacji o koncie -->
     <div class="settings__section">
-      <h2 class="settings__section-title">Konto</h2>
+      <div class="settings__section-header">
+        <h2 class="settings__section-title">
+          <app-form-icon name="user" [size]="20" color="#52679C"></app-form-icon>
+          Informacje o koncie
+        </h2>
+      </div>
       
       <div class="settings__user-info" *ngIf="!isLoading && userInfo">
         <div class="settings__user-field">
-          <span class="settings__user-label">Nazwa wyświetlana:</span>
-          <span class="settings__user-value">{{ userInfo.fullName || 'Brak' }}</span>
+          <div class="settings__field-header">
+            <app-form-icon name="user" [size]="16" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+            <span class="settings__user-label">Nazwa wyświetlana</span>
+          </div>
+          <div class="settings__user-value">
+            {{ userInfo.fullName || 'Brak' }}
+          </div>
         </div>
         <div class="settings__user-field">
-          <span class="settings__user-label">Email:</span>
-          <span class="settings__user-value">{{ userInfo.email || 'Brak' }}</span>
+          <div class="settings__field-header">
+            <app-form-icon name="email" [size]="16" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+            <span class="settings__user-label">Email</span>
+          </div>
+          <div class="settings__user-value">
+            {{ userInfo.email || 'Brak' }}
+          </div>
         </div>
       </div>
       
       <div class="settings__loading" *ngIf="isLoading">
-        Ładowanie danych...
-      </div>
-      
-      <div class="settings__actions">
-        <app-button 
-          label="Wyloguj się" 
-          variant="secondary"
-          (clicked)="logout()">
-        </app-button>
+        <div class="settings__loading-spinner"></div>
+        <span class="settings__loading-text">Ładowanie danych...</span>
       </div>
     </div>
   </div>

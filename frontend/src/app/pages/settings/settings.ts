@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Button } from '../components/ui/buttons/button/button';
+import { Logo } from '../components/ui/logo/logo';
+import { FormIcon } from '../components/ui/form-icon/form-icon';
 import { AuthService, UserInfo } from '../../services/auth.service';
 
 @Component({
   selector: 'app-settings',
-  imports: [Button, CommonModule],
+  imports: [Button, CommonModule, Logo, FormIcon],
   templateUrl: './settings.html',
   styleUrl: './settings.scss',
 })

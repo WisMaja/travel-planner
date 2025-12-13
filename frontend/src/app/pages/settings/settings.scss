@@ -1,78 +1,197 @@
 .settings {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 32px 58px;
+  gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, rgba(82, 103, 156, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
+}
+
+.settings__header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 58px;
+  width: calc(100% + 116px);
+  margin-left: -58px;
+  margin-top: -32px;
+  height: 58px;
+  align-self: stretch;
+  box-sizing: border-box;
+}
+
+.settings__header-left {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 100px;
+  flex-shrink: 0;
+}
+
+.settings__header-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.settings__back-button,
+.settings__logout-button {
+  flex-shrink: 0;
 }
 
 .settings__title {
   font-family: 'Enriqueta', serif;
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 400;
   color: #474747;
-  margin-bottom: 24px;
+  margin: 0 0 24px 0;
+  width: 100%;
+  max-width: 1321px;
+  letter-spacing: -0.5px;
 }
 
 .settings__content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  width: 100%;
+  max-width: 1321px;
 }
 
 .settings__section {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 32px;
+  gap: 24px;
+  width: 100%;
+  background: #FFFFFF;
+  box-shadow: 0px 4px 15px rgba(82, 103, 156, 0.15);
   border-radius: 20px;
-  padding: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(82, 103, 156, 0.05);
+
+  &:hover {
+    box-shadow: 0px 6px 20px rgba(82, 103, 156, 0.2);
+    transform: translateY(-2px);
+  }
+}
+
+.settings__section-header {
+  width: 100%;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(82, 103, 156, 0.1);
 }
 
 .settings__section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: 'Enriqueta', serif;
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 400;
   color: #474747;
-  margin-bottom: 16px;
+  margin: 0;
+  
+  app-form-icon {
+    flex-shrink: 0;
+  }
 }
 
 .settings__user-info {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 24px;
+  width: 100%;
 }
 
 .settings__user-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+  width: 100%;
+}
+
+.settings__field-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .settings__user-label {
   font-family: 'Enriqueta', serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  color: #474747;
+  color: rgba(82, 103, 156, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 500;
 }
 
 .settings__user-value {
   font-family: 'Inter', sans-serif;
   font-size: 16px;
   font-weight: 400;
-  color: #000000;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 5px;
+  color: #2F2F2F;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(82, 103, 156, 0.03) 0%, rgba(82, 103, 156, 0.08) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(82, 103, 156, 0.15);
+  transition: all 0.3s ease;
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0px 1px 3px rgba(82, 103, 156, 0.05);
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(82, 103, 156, 0.05) 0%, rgba(82, 103, 156, 0.12) 100%);
+    border-color: rgba(82, 103, 156, 0.25);
+    box-shadow: inset 0px 1px 3px rgba(82, 103, 156, 0.1), 0px 2px 4px rgba(82, 103, 156, 0.1);
+  }
 }
 
 .settings__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  width: 100%;
+  gap: 16px;
+}
+
+.settings__loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(82, 103, 156, 0.1);
+  border-top-color: rgba(82, 103, 156, 0.6);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.settings__loading-text {
   font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  color: #474747;
-  margin-bottom: 20px;
+  font-size: 16px;
+  color: rgba(82, 103, 156, 0.7);
+  font-weight: 400;
 }
 
 .settings__actions {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  width: 100%;
 }
 
