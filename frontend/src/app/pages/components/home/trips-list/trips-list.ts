@@ -7,6 +7,7 @@ import { FormIcon } from '../../ui/form-icon/form-icon';
 
 export interface Trip {
   id: number;
+  plansId?: string; // ID planu z backendu
   where?: string;
   date?: string;
   title?: string;

@@ -28,6 +28,11 @@ namespace backend.Services
         Task<PlansDto> CreatePlanAsync(CreatePlansDto dto);
 
         /// <summary>
+        /// Tworzy nowy pusty plan dla użytkownika (tylko wymagane pola)
+        /// </summary>
+        Task<PlansDto> CreateEmptyPlanAsync(Guid userId);
+
+        /// <summary>
         /// Aktualizuje istniejący plan
         /// </summary>
         Task<PlansDto?> UpdatePlanAsync(Guid planId, UpdatePlansDto dto);

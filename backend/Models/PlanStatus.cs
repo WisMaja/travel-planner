@@ -8,7 +8,7 @@ namespace backend.Models
         /// <summary>
         /// Identyfikator statusu (klucz główny)
         /// </summary>
-        public Guid StatusId { get; set; }
+        public int StatusId { get; set; }
         
         /// <summary>
         /// Nazwa statusu (np. "Draft", "Active", "Completed")

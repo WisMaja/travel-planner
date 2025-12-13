@@ -61,6 +61,50 @@ namespace backend.Services
             return MapToDto(plan, status);
         }
 
+        public async Task<PlansDto> CreateEmptyPlanAsync(Guid userId)
+        {
+            // Sprawdzenie czy użytkownik istnieje
+            var userExists = await _dbContext.Users
+                .AnyAsync(u => u.UsersId == userId && u.DeletedAtUtc == null);
+
+            if (!userExists)
+            {
+                throw new ArgumentException($"Użytkownik o ID {userId} nie istnieje");
+            }
+
+            // Pobierz pierwszy dostępny status (lub domyślny "Draft")
+            var defaultStatus = await _dbContext.PlanStatus
+                .FirstOrDefaultAsync(s => s.Name != null && s.Name.ToLower() == "draft");
+
+            // Jeśli nie ma statusu "Draft", weź pierwszy dostępny
+            if (defaultStatus == null)
+            {
+                defaultStatus = await _dbContext.PlanStatus.FirstOrDefaultAsync();
+            }
+
+            if (defaultStatus == null)
+            {
+                throw new ArgumentException("Brak dostępnych statusów planów w bazie danych");
+            }
+
+            var plan = new Plans
+            {
+                PlansId = Guid.NewGuid(),
+                OwnerId = userId,
+                Title = null, // Pusty plan - tytuł będzie ustawiony później
+                StatusId = defaultStatus.StatusId,
+                IsPublic = false, // Domyślnie prywatny
+                CreatedAtUtc = DateTime.UtcNow,
+                UpdatedAtUtc = DateTime.UtcNow,
+                DeletedAtUtc = null
+            };
+
+            _dbContext.Plans.Add(plan);
+            await _dbContext.SaveChangesAsync();
+
+            return MapToDto(plan, defaultStatus);
+        }
+
         public async Task<PlansDto> CreatePlanAsync(CreatePlansDto dto)
         {
             // Sprawdzenie czy status istnieje

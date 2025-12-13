@@ -1,11 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { HomeHeader } from '../components/home/home-header/home-header';
-import { TripsList } from '../components/home/trips-list/trips-list';
+import { TripsList, Trip } from '../components/home/trips-list/trips-list';
 import { TripsStats } from '../components/home/trips-stats/trips-stats';
 import { TripsHeader } from '../components/home/trips-header/trips-header';
 import { GoogleMapComponent, MapPlace } from '../components/maps/google-map/google-map';
+import { PlansService, Plan } from '../../services/plans.service';
 
 type FilterType = 'all' | 'upcoming' | 'past';
 
@@ -15,62 +16,63 @@ type FilterType = 'all' | 'upcoming' | 'past';
   templateUrl:'./home-page.html',
   styleUrl: './home-page.scss', 
 })
-export class HomePage {
+export class HomePage implements OnInit {
   activeFilter: FilterType = 'all';
   searchQuery: string = '';
+  trips: Trip[] = [];
+  isLoading = true;
   
-  // Tymczasowo lista na twardo wstawiona
-  trips = [
-    { 
-      id: 1, 
-      where: 'Paryż', 
-      date: '2.02 - 5.02', 
-      title: 'Weekend w Paryżu', 
-      imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 2, 
-      where: 'Rzym', 
-      date: '10.02 - 15.02', 
-      title: 'Zwiedzanie Rzymu', 
-      imageUrl: 'https://images.unsplash.com/photo-1529260830199-42c24126f198?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 3, 
-      where: 'Barcelona', 
-      date: '20.02 - 25.02', 
-      title: 'Hiszpańska przygoda', 
-      imageUrl: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 4, 
-      where: 'Londyn', 
-      date: '1.03 - 5.03', 
-      title: 'Weekend w Londynie', 
-      imageUrl: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 5, 
-      where: 'Amsterdam', 
-      date: '10.03 - 15.03', 
-      title: 'Holenderskie kanały', 
-      imageUrl: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 6, 
-      where: 'Berlin', 
-      date: '20.03 - 25.03', 
-      title: 'Niemiecka stolica', 
-      imageUrl: 'https://images.unsplash.com/photo-1587330979470-3585a3c2e1d3?w=400&h=300&fit=crop'
-    },
-    { 
-      id: 7, 
-      where: 'Praga', 
-      date: '1.04 - 5.04', 
-      title: 'Czeska przygoda', 
-      imageUrl: 'https://images.unsplash.com/photo-1541849546-216549ae216d?w=400&h=300&fit=crop'
+  constructor(
+    private plansService: PlansService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadPlans();
+  }
+
+  loadPlans(): void {
+    this.isLoading = true;
+    this.plansService.getMyPlans().subscribe({
+      next: (plans) => {
+        this.trips = this.mapPlansToTrips(plans);
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading plans:', error);
+        this.trips = [];
+        this.isLoading = false;
+      }
+    });
+  }
+
+  /**
+   * Mapuje plany z API na format Trip użyty w komponencie
+   */
+  private mapPlansToTrips(plans: Plan[]): Trip[] {
+    return plans.map((plan, index) => ({
+      id: index + 1, // Tymczasowe ID dla kompatybilności
+      plansId: plan.plansId, // Przechowaj plansId dla nawigacji
+      where: plan.title || 'Brak lokalizacji',
+      date: this.formatDate(plan.createdAtUtc),
+      title: plan.title || 'Bez tytułu',
+      imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop' // Domyślne zdjęcie
+    }));
+  }
+
+  /**
+   * Formatuje datę do wyświetlenia
+   */
+  private formatDate(dateString: string): string {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate();
+      const month = date.getMonth() + 1;
+      return `${day}.${month < 10 ? '0' : ''}${month}`;
+    } catch {
+      return '';
     }
-  ];
+  }
 
   get filteredTrips() {
     let result = this.trips;
@@ -99,8 +101,23 @@ export class HomePage {
     return this.trips.length > 0 ? this.trips[0] : null;
   }
 
-  onAddTrip(): void { 
-    console.log('ADD TRIP'); 
+  onAddTrip(): void {
+    this.isLoading = true;
+    this.plansService.createEmptyPlan().subscribe({
+      next: (plan) => {
+        this.isLoading = false;
+        // Przekieruj do strony edycji podstawowych informacji z ID planu
+        this.router.navigate(['/plan/basic-info/edit'], {
+          queryParams: { planId: plan.plansId }
+        });
+      },
+      error: (error) => {
+        console.error('Error creating plan:', error);
+        this.isLoading = false;
+        // TODO: Wyświetlić komunikat błędu użytkownikowi
+        alert('Wystąpił błąd podczas tworzenia planu. Spróbuj ponownie.');
+      }
+    });
   }
   
   onSort(): void { 
@@ -108,8 +125,13 @@ export class HomePage {
   }
 
   onTripClick(tripId: number): void {
-    // Navigate to trip overview
-    console.log('Trip clicked:', tripId);
+    // Znajdź plan na podstawie ID i przekieruj do szczegółów
+    const trip = this.trips.find(t => t.id === tripId);
+    if (trip) {
+      // Użyj plansId z oryginalnego planu - potrzebujemy przechować to w Trip
+      // Na razie przekieruj do overview
+      // TODO: Przekazać plansId do Trip interface
+    }
   }
 
   onFilterChange(filter: FilterType): void {
@@ -122,11 +144,13 @@ export class HomePage {
 
   // Przygotuj miejsca dla mapy na podstawie wyjazdów
   get placesForMap(): MapPlace[] {
-    return this.trips.map(trip => ({
-      id: trip.id,
-      name: trip.where || trip.title,
-      address: trip.where || '',
-      placeType: 'city' as const
-    }));
+    return this.trips
+      .filter(trip => trip.where || trip.title)
+      .map(trip => ({
+        id: trip.id,
+        name: trip.where || trip.title || 'Nieznane miejsce',
+        address: trip.where || '',
+        placeType: 'city' as const
+      }));
   }
 }

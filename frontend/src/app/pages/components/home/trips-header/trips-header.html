@@ -27,7 +27,7 @@
     </app-button>
   </div>
 
-  <app-button variant="basic-accept" label="Dodaj wyjazd" [navigateTo]="addButtonNavigateTo" class="trips-header__add-button">
+  <app-button variant="basic-accept" label="Dodaj wyjazd" (clicked)="onAddClick()" class="trips-header__add-button">
     <span icon>
       <app-form-icon name="plus" [size]="15" color="#52679C"></app-form-icon>
     </span>

@@ -23,7 +23,7 @@ namespace backend.Models
         /// <summary>
         /// Identyfikator statusu planu (klucz obcy do PlanStatus)
         /// </summary>
-        public Guid StatusId { get; set; }
+        public int StatusId { get; set; }
         
         /// <summary>
         /// Czy plan jest publiczny

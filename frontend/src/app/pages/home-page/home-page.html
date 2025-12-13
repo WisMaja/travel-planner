@@ -17,17 +17,24 @@
     <app-trips-header
       [title]="'Nadchodzące wyjazdy'"
       [activeFilter]="activeFilter"
-      [addButtonNavigateTo]="'/plan/basic-info/edit'"
       (filterChange)="onFilterChange($event)"
-      (sortClick)="onSort()">
+      (sortClick)="onSort()"
+      (addClick)="onAddTrip()">
     </app-trips-header>
 
     <!-- Trips List -->
     <app-trips-list
+      *ngIf="!isLoading"
       [trips]="filteredTrips"
       [navigateTo]="'/plan/overview'"
       (tripClick)="onTripClick($event)">
     </app-trips-list>
+    
+    <!-- Loading State -->
+    <div class="trips-loading" *ngIf="isLoading">
+      <div class="trips-loading__spinner"></div>
+      <p class="trips-loading__text">Ładowanie planów...</p>
+    </div>
   </div>
 
   <!-- Map -->

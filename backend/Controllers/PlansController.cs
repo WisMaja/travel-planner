@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using backend.DTOs;
 using backend.Services;
 
@@ -16,6 +18,32 @@ namespace backend.Controllers
         public PlansController(IPlansService plansService)
         {
             _plansService = plansService;
+        }
+
+        /// <summary>
+        /// Pobiera wszystkie plany aktualnie zalogowanego użytkownika
+        /// </summary>
+        [Authorize]
+        [HttpGet("me")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<List<PlansDto>>> GetMyPlans()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { message = "Nieprawidłowy token użytkownika" });
+                }
+
+                var plans = await _plansService.GetUserPlansAsync(userId);
+                return Ok(plans);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Błąd podczas pobierania planów", error = ex.Message });
+            }
         }
 
         /// <summary>
@@ -70,6 +98,36 @@ namespace backend.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Błąd podczas pobierania planu", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Tworzy nowy pusty plan dla zalogowanego użytkownika
+        /// </summary>
+        [Authorize]
+        [HttpPost("create-empty")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<PlansDto>> CreateEmptyPlan()
+        {
+            try
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    return Unauthorized(new { message = "Nieprawidłowy token użytkownika" });
+                }
+
+                var plan = await _plansService.CreateEmptyPlanAsync(userId);
+                return CreatedAtAction(nameof(GetPlanById), new { planId = plan.PlansId }, plan);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Błąd podczas tworzenia planu", error = ex.Message });
             }
         }
 

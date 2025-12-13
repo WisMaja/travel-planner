@@ -20,6 +20,7 @@ export class TripsHeader {
   
   @Output() filterChange = new EventEmitter<FilterType>();
   @Output() sortClick = new EventEmitter<void>();
+  @Output() addClick = new EventEmitter<void>();
 
   onFilterChange(filter: FilterType): void {
     this.filterChange.emit(filter);
@@ -27,6 +28,10 @@ export class TripsHeader {
 
   onSort(): void {
     this.sortClick.emit();
+  }
+
+  onAddClick(): void {
+    this.addClick.emit();
   }
 }
 

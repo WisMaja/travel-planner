@@ -8,7 +8,7 @@ namespace backend.DTOs
         public Guid PlansId { get; set; }
         public Guid OwnerId { get; set; }
         public string? Title { get; set; }
-        public Guid StatusId { get; set; }
+        public int StatusId { get; set; }
         public string? StatusName { get; set; }
         public bool IsPublic { get; set; }
         public DateTime CreatedAtUtc { get; set; }
@@ -23,7 +23,7 @@ namespace backend.DTOs
     {
         public Guid OwnerId { get; set; }
         public string? Title { get; set; }
-        public Guid StatusId { get; set; }
+        public int StatusId { get; set; }
         public bool IsPublic { get; set; }
     }
 
@@ -33,7 +33,7 @@ namespace backend.DTOs
     public class UpdatePlansDto
     {
         public string? Title { get; set; }
-        public Guid? StatusId { get; set; }
+        public int? StatusId { get; set; }
         public bool? IsPublic { get; set; }
     }
 }
