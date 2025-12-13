@@ -134,8 +134,18 @@
     </div>
   </div>
 
+  <!-- Komunikat o błędzie -->
+  <div class="signup__error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
   <!-- Akceptuj -->
   <div class="signup__actions">
-    <app-button label="Akceptuj" variant="basic-accept" navigateTo="/home"> </app-button>
+    <app-button 
+      [label]="isLoading ? 'Rejestrowanie...' : 'Akceptuj'" 
+      variant="basic-accept"
+      [disabled]="isLoading"
+      type="submit">
+    </app-button>
   </div>
 </form>

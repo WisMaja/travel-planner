@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { SharedImports } from '../../../../shared/shared-imports/shared-imports';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormIcon } from '../../ui/form-icon/form-icon';
+import { AuthService } from '../../../../services/auth.service';
 
 @Component({
   selector: 'app-signup-form',
@@ -14,8 +16,14 @@ export class SignupForm {
   hidePassword = true;
   hideConfirmPassword = true;
   form;
+  isLoading = false;
+  errorMessage = '';
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.form = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
       lastName: ['', [Validators.required, Validators.minLength(2)]],
@@ -46,8 +54,33 @@ export class SignupForm {
       this.form.markAllAsTouched();
       return;
     }
-    const { firstName, lastName, email, phone, password } = this.form.value;
-    console.log('Sign up:', { firstName, lastName, email, phone});
+
+    const { email, password } = this.form.value;
+    
+    if (!email || !password) {
+      this.errorMessage = 'Email i hasło są wymagane';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.authService.register({ email, password }).subscribe({
+      next: () => {
+        this.isLoading = false;
+        // Przekieruj do strony logowania po sukcesie
+        this.router.navigate(['/signin']);
+      },
+      error: (error: any) => {
+        this.isLoading = false;
+        if (error.status === 409) {
+          this.errorMessage = 'Użytkownik o tym emailu już istnieje';
+        } else {
+          this.errorMessage = 'Wystąpił błąd podczas rejestracji. Spróbuj ponownie.';
+        }
+        console.error('Registration error:', error);
+      }
+    });
   }
 
   togglePassword() {

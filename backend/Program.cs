@@ -20,10 +20,25 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddScoped<IPlansService, PlansService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
+// Konfiguracja CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200") // Port domyślny Angular dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Dodanie kontrolerów
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+// Użycie CORS (musi być przed MapControllers)
+app.UseCors("AllowAngularApp");
 
 app.UseSwagger();
 
