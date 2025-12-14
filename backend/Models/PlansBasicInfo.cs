@@ -19,17 +19,17 @@ namespace backend.Models
         /// <summary>
         /// Data rozpoczęcia podróży
         /// </summary>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         
         /// <summary>
         /// Data zakończenia podróży
         /// </summary>
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         
         /// <summary>
         /// Identyfikator typu podróży (klucz obcy do TripType)
         /// </summary>
-        public Guid TripTypeId { get; set; }
+        public int? TripTypeId { get; set; }
         
         /// <summary>
         /// URL do zdjęcia okładkowego planu
@@ -39,7 +39,7 @@ namespace backend.Models
         /// <summary>
         /// Budżet planu
         /// </summary>
-        public decimal BudgetAmount { get; set; }
+        public decimal? BudgetAmount { get; set; }
         
         /// <summary>
         /// Dodatkowe notatki

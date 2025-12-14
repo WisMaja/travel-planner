@@ -100,6 +100,24 @@ namespace backend.Services
             };
 
             _dbContext.Plans.Add(plan);
+            
+            // Najpierw zapisz Plans, żeby był dostępny dla foreign key
+            await _dbContext.SaveChangesAsync();
+
+            // Utwórz również rekord w PlanBasicInfo po zapisaniu Plans
+            var planBasicInfo = new PlansBasicInfo
+            {
+                PlanId = plan.PlansId,
+                Description = null,
+                StartDate = null,
+                EndDate = null,
+                TripTypeId = null,
+                CoverImgUrl = null,
+                BudgetAmount = null,
+                Notes = null
+            };
+
+            _dbContext.PlansBasicInfo.Add(planBasicInfo);
             await _dbContext.SaveChangesAsync();
 
             return MapToDto(plan, defaultStatus);
