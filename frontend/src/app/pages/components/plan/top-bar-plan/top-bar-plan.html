@@ -1,7 +1,8 @@
 <nav class="top-bar-plan" role="tablist" aria-label="Etapy planu">
   <ng-container *ngFor="let s of steps">
     <a
-      [routerLink]="s.to"
+      [routerLink]="[s.to]"
+      [queryParams]="getQueryParams(s)"
       routerLinkActive="is-active"
       [routerLinkActiveOptions]="{ exact: s.exact !== false }"
       #rla="routerLinkActive"

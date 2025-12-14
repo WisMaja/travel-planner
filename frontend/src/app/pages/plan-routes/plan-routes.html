@@ -8,7 +8,8 @@
       { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
       { label: 'Checklist',   to: '/plan/checklist', exact: false },
       { label: 'Podgląd',     to: '/plan/overview', exact: false }
-    ]">
+    ]"
+    [planId]="planId">
   </top-bar-plan>
 
   <div class="routes-view__container">
@@ -100,7 +101,7 @@
           <app-button
             variant="basic-accept"
             label="Edytuj"
-            navigateTo="/plan/routes/edit">
+            (clicked)="navigateToEdit()">
           </app-button>
         </div>
       </div>

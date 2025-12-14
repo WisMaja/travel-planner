@@ -16,6 +16,7 @@ export class TripView {
   @Input() title?: string;
   @Input() imageUrl?: string;
   @Input() navigateTo?: string;
+  @Input() planId?: string; // ID planu do przekazania w queryParams
   @Output() clicked = new EventEmitter<void>();
 
   imageError = false;
@@ -25,7 +26,10 @@ export class TripView {
   onCardClick(): void {
     this.clicked.emit();
     if (this.navigateTo) {
-      this.router.navigate([this.navigateTo]);
+      const queryParams = this.planId ? { planId: this.planId } : undefined;
+      this.router.navigate([this.navigateTo], {
+        queryParams: queryParams
+      });
     }
   }
 

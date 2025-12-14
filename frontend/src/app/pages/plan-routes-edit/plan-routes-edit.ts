@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
@@ -52,7 +52,8 @@ interface Route {
   templateUrl: './plan-routes-edit.html',
   styleUrl: './plan-routes-edit.scss',
 })
-export class PlanRoutesEdit {
+export class PlanRoutesEdit implements OnInit {
+  planId: string | null = null;
   searchQuery: string = '';
   showAddRouteModal: boolean = false;
   editingRouteId: number | null = null;
@@ -154,7 +155,11 @@ export class PlanRoutesEdit {
     }
   ];
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     this.routeForm = this.fb.group({
       fromPlaceId: [''],
       toPlaceId: [''],
@@ -170,6 +175,22 @@ export class PlanRoutesEdit {
     this.routeForm.valueChanges.subscribe(() => {
       this.validateForm();
     });
+  }
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+    });
+  }
+
+  navigateToRoutes(): void {
+    if (this.planId) {
+      this.router.navigate(['/plan/routes'], {
+        queryParams: { planId: this.planId }
+      });
+    } else {
+      this.router.navigate(['/plan/routes']);
+    }
   }
 
   validateForm(): void {
@@ -431,7 +452,10 @@ export class PlanRoutesEdit {
   onSave(): void {
     console.log('Saving routes:', this.routes);
     this.successMessage = 'Trasy zostały zapisane pomyślnie';
-    setTimeout(() => this.successMessage = null, 3000);
+    setTimeout(() => {
+      this.successMessage = null;
+      this.navigateToRoutes();
+    }, 1000);
   }
 
   // Funkcje do zarządzania waypoints

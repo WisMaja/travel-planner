@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
@@ -29,9 +30,18 @@ interface ChecklistCategory {
   templateUrl: './plan-checklist.html',
   styleUrl: './plan-checklist.scss',
 })
-export class PlanChecklist {
+export class PlanChecklist implements OnInit {
+  planId: string | null = null;
   searchQuery: string = '';
   filterType: 'all' | 'checked' | 'unchecked' = 'all';
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+    });
+  }
 
   categories: ChecklistCategory[] = [
     {

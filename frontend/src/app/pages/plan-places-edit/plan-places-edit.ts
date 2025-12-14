@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
@@ -48,7 +48,8 @@ interface Place {
   templateUrl: './plan-places-edit.html',
   styleUrl: './plan-places-edit.scss',
 })
-export class PlanPlacesEdit {
+export class PlanPlacesEdit implements OnInit {
+  planId: string | null = null;
   searchQuery: string = '';
   mapSearchValue: string = '';
   activeCategory: PlaceCategory = 'all';
@@ -83,6 +84,27 @@ export class PlanPlacesEdit {
   variantParentId: number | null = null;
   variantParentType: 'city' | 'country' | null = null;
   newVariantName: string = '';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+    });
+  }
+
+  navigateToPlaces(): void {
+    if (this.planId) {
+      this.router.navigate(['/plan/places'], {
+        queryParams: { planId: this.planId }
+      });
+    } else {
+      this.router.navigate(['/plan/places']);
+    }
+  }
   
   getNewTagForPlace(placeId: number): string {
     const place = this.selectedPlaces.find(p => p.id === placeId);
@@ -1255,7 +1277,10 @@ export class PlanPlacesEdit {
     
     console.log('Saving places:', this.selectedPlaces);
     this.successMessage = 'Plan został zapisany pomyślnie';
-    setTimeout(() => this.successMessage = null, 3000);
+    setTimeout(() => {
+      this.successMessage = null;
+      this.navigateToPlaces();
+    }, 1000);
     // Tutaj będzie logika zapisywania miejsc do planu
   }
 

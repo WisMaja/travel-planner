@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
 import { Button } from '../components/ui/buttons/button/button';
@@ -45,9 +45,31 @@ interface Place {
   templateUrl: './plan-places.html',
   styleUrl: './plan-places.scss',
 })
-export class PlanPlaces {
+export class PlanPlaces implements OnInit {
+  planId: string | null = null;
   searchQuery: string = '';
   activePlaceType: PlaceType | 'all' = 'all';
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+    });
+  }
+
+  navigateToEdit(): void {
+    if (this.planId) {
+      this.router.navigate(['/plan/places/edit'], {
+        queryParams: { planId: this.planId }
+      });
+    } else {
+      this.router.navigate(['/plan/places/edit']);
+    }
+  }
   
   placeTypes: { id: PlaceType | 'all'; name: string }[] = [
     { id: 'all', name: 'Wszystkie' },

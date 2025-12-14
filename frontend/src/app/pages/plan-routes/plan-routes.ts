@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { Button } from '../components/ui/buttons/button/button';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
@@ -45,7 +45,30 @@ interface Route {
   templateUrl: './plan-routes.html',
   styleUrl: './plan-routes.scss',
 })
-export class PlanRoutes {
+export class PlanRoutes implements OnInit {
+  planId: string | null = null;
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+    });
+  }
+
+  navigateToEdit(): void {
+    if (this.planId) {
+      this.router.navigate(['/plan/routes/edit'], {
+        queryParams: { planId: this.planId }
+      });
+    } else {
+      this.router.navigate(['/plan/routes/edit']);
+    }
+  }
+
   // Przykładowe miejsca - w przyszłości będą pobierane z serwisu
   availablePlaces: Place[] = [
     { id: 100, name: 'Polska', address: 'Europa Środkowa' },

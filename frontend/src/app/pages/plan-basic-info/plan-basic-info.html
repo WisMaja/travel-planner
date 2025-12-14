@@ -8,10 +8,28 @@
       { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
       { label: 'Checklist',   to: '/plan/checklist', exact: false },
       { label: 'Podgląd',     to: '/plan/overview', exact: false }
-    ]">
+    ]"
+    [planId]="planId">
   </top-bar-plan>
 
-  <div class="basic-info__container">
+  <!-- Loading Indicator -->
+  <div class="loading-overlay" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <p>Ładowanie danych planu...</p>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="message-container" *ngIf="errorMessage && !planId">
+    <div class="message message--error">
+      <span class="message__text">{{ errorMessage }}</span>
+      <button type="button" class="message__close" (click)="navigateToHome()" aria-label="Wróć do listy planów">
+        <app-form-icon name="x" [size]="16" color="currentColor"></app-form-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="basic-info__container" *ngIf="planData && !isLoading">
     <!-- Content Section -->
     <div class="basic-info__content-section">
       <div class="basic-info__content">
@@ -64,22 +82,8 @@
           </div>
         </div>
 
-        <!-- Trip Types (Tags) -->
-        <div class="basic-info__field" *ngIf="selectedTripTypes.length > 0 || selectedCustomTypes.length > 0">
-          <label class="basic-info__label">Typ wyjazdu</label>
-          <div class="basic-info__tags">
-            <span 
-              *ngFor="let type of selectedTripTypes" 
-              class="basic-info__tag">
-              {{ type.name }}
-            </span>
-            <span 
-              *ngFor="let customType of selectedCustomTypes" 
-              class="basic-info__tag basic-info__tag--custom">
-              {{ customType }}
-            </span>
-          </div>
-        </div>
+        <!-- Trip Types (Tags) - na razie pomijamy, bo backend ma tylko jeden TripTypeId -->
+        <!-- W przyszłości można dodać wyświetlanie typu podróży -->
 
         <!-- Budget -->
         <div class="basic-info__field" *ngIf="planData.budgetAmount">
@@ -103,7 +107,7 @@
           <app-button
             variant="basic-accept"
             label="Edytuj"
-            navigateTo="/plan/basic-info/edit">
+            (clicked)="navigateToEdit()">
           </app-button>
         </div>
       </div>
