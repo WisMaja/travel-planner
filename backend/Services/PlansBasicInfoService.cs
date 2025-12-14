@@ -81,8 +81,14 @@ namespace backend.Services
             if (dto.Title != null)
                 plan.Title = dto.Title;
 
-            if (dto.CoverImageUrl != null)
-                plan.CoverImageUrl = dto.CoverImageUrl;
+            // Aktualizuj Destination w Plans - zapisz do obu tabel
+            if (dto.Destination != null)
+                plan.Destination = dto.Destination;
+
+            // Zawsze synchronizuj CoverImageUrl - użyj CoverImageUrl jeśli jest podane, w przeciwnym razie CoverImgUrl
+            // Oba pola powinny mieć tę samą wartość
+            var coverImageUrl = dto.CoverImageUrl ?? dto.CoverImgUrl;
+            plan.CoverImageUrl = coverImageUrl;
 
             plan.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -102,6 +108,9 @@ namespace backend.Services
                         throw new ArgumentException($"TripType o ID {dto.TripTypeId.Value} nie istnieje");
                 }
 
+                // Użyj CoverImageUrl jeśli jest podane, w przeciwnym razie CoverImgUrl
+                var coverImgUrl = dto.CoverImageUrl ?? dto.CoverImgUrl;
+                
                 basicInfo = new PlansBasicInfo
                 {
                     PlanId = planId,
@@ -111,11 +120,18 @@ namespace backend.Services
                     StartDate = dto.StartDate,
                     EndDate = dto.EndDate,
                     TripTypeId = dto.TripTypeId,
-                    CoverImgUrl = dto.CoverImgUrl,
+                    CoverImgUrl = coverImgUrl,
                     BudgetAmount = dto.BudgetAmount,
                     BudgetCurrency = dto.BudgetCurrency,
                     Notes = dto.Notes
                 };
+                
+                // Również zaktualizuj Plans.CoverImageUrl i Plans.Destination
+                if (coverImgUrl != null)
+                    plan.CoverImageUrl = coverImgUrl;
+                
+                if (dto.Destination != null)
+                    plan.Destination = dto.Destination;
 
                 _dbContext.PlansBasicInfo.Add(basicInfo);
             }
@@ -130,7 +146,11 @@ namespace backend.Services
                     basicInfo.Location = dto.Location;
 
                 if (dto.Destination != null)
+                {
                     basicInfo.Destination = dto.Destination;
+                    // Również zaktualizuj Plans.Destination
+                    plan.Destination = dto.Destination;
+                }
 
                 if (dto.StartDate.HasValue)
                     basicInfo.StartDate = dto.StartDate.Value;
@@ -160,8 +180,17 @@ namespace backend.Services
                 }
                 // Jeśli TripTypeId nie jest wysłane (null), nie aktualizujemy pola
 
-                if (dto.CoverImgUrl != null)
-                    basicInfo.CoverImgUrl = dto.CoverImgUrl;
+                // Aktualizuj CoverImgUrl - użyj CoverImageUrl jeśli jest podane, w przeciwnym razie CoverImgUrl
+                var coverImgUrl = dto.CoverImageUrl ?? dto.CoverImgUrl;
+                if (coverImgUrl != null)
+                {
+                    basicInfo.CoverImgUrl = coverImgUrl;
+                }
+                else
+                {
+                    // Jeśli oba są null, wyczyść CoverImgUrl (użytkownik usunął zdjęcie)
+                    basicInfo.CoverImgUrl = null;
+                }
 
                 if (dto.BudgetAmount.HasValue)
                     basicInfo.BudgetAmount = dto.BudgetAmount.Value;

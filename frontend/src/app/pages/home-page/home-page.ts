@@ -14,14 +14,14 @@ type FilterType = 'all' | 'upcoming' | 'past';
   selector: 'app-home-page',
   imports: [CommonModule, RouterModule, HomeHeader, TripsList, TripsStats, TripsHeader, GoogleMapComponent],
   templateUrl:'./home-page.html',
-  styleUrl: './home-page.scss', 
+  styleUrl: './home-page.scss',
 })
 export class HomePage implements OnInit {
   activeFilter: FilterType = 'all';
   searchQuery: string = '';
   trips: Trip[] = [];
   isLoading = true;
-  
+
   constructor(
     private plansService: PlansService,
     private router: Router
@@ -53,7 +53,7 @@ export class HomePage implements OnInit {
     return plans.map((plan, index) => ({
       id: index + 1, // Tymczasowe ID dla kompatybilności
       plansId: plan.plansId, // Przechowaj plansId dla nawigacji
-      where: plan.title || 'Brak lokalizacji',
+      where: plan.destination || 'Brak lokalizacji',
       date: this.formatDate(plan.createdAtUtc),
       title: plan.title || 'Bez tytułu',
       imageUrl: plan.coverImageUrl || undefined // Użyj zdjęcia z bazy, jeśli nie ma - undefined (placeholder się wyświetli)
@@ -76,16 +76,16 @@ export class HomePage implements OnInit {
 
   get filteredTrips() {
     let result = this.trips;
-    
+
     // Filtrowanie musze obsłuzyc jeszcze
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
-      result = result.filter(trip => 
+      result = result.filter(trip =>
         trip.title?.toLowerCase().includes(query) ||
         trip.where?.toLowerCase().includes(query)
       );
     }
-    
+
     return result;
   }
 
@@ -119,9 +119,9 @@ export class HomePage implements OnInit {
       }
     });
   }
-  
-  onSort(): void { 
-    console.log('SORT CLICK');  
+
+  onSort(): void {
+    console.log('SORT CLICK');
   }
 
   onTripClick(tripId: number): void {

@@ -251,21 +251,100 @@
 
         <!-- Cover Image -->
         <div class="basic-info-form__field">
-          <label class="basic-info-form__label" for="coverImgUrl">Zdjęcie okładki</label>
-          <div class="basic-info-form__image-upload">
-            <input
-              id="coverImgUrl"
-              type="file"
-              accept="image/*"
-              (change)="onImageUpload($event)"
-              class="basic-info-form__file-input"
-            />
-            <label for="coverImgUrl" class="basic-info-form__file-label">
-              <app-form-icon name="plus" [size]="20" color="#52679C"></app-form-icon>
-              <span>Wybierz zdjęcie</span>
-            </label>
+          <label class="basic-info-form__label">Zdjęcie okładki</label>
+          
+          <!-- Tryb wyboru: URL lub Upload -->
+          <div class="basic-info-form__image-mode-selector">
+            <button
+              type="button"
+              class="basic-info-form__mode-button"
+              [class.basic-info-form__mode-button--active]="coverImageMode === 'url'"
+              (click)="setCoverImageMode('url')">
+              Link URL
+            </button>
+            <button
+              type="button"
+              class="basic-info-form__mode-button"
+              [class.basic-info-form__mode-button--active]="coverImageMode === 'upload'"
+              (click)="setCoverImageMode('upload')">
+              Z komputera
+            </button>
+          </div>
+
+          <!-- Tryb URL -->
+          <div *ngIf="coverImageMode === 'url'" class="basic-info-form__image-url-input">
+            <div class="input">
+              <input
+                id="coverImgUrl"
+                class="input__field"
+                type="url"
+                formControlName="coverImgUrl"
+                placeholder="https://example.com/image.jpg"
+                autocomplete="off"
+              />
+              <span class="input__icon" aria-hidden="true">
+                <app-form-icon name="map"></app-form-icon>
+              </span>
+            </div>
             <div class="basic-info-form__image-preview" *ngIf="form.get('coverImgUrl')?.value">
               <img [src]="form.get('coverImgUrl')?.value" alt="Preview" />
+              <button
+                type="button"
+                class="basic-info-form__image-remove"
+                (click)="removeCoverImage()"
+                aria-label="Usuń zdjęcie">
+                <app-form-icon name="x" [size]="16" color="#fff"></app-form-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tryb Upload -->
+          <div *ngIf="coverImageMode === 'upload'" class="basic-info-form__image-upload">
+            <input
+              id="coverImgFile"
+              type="file"
+              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+              (change)="onFileSelected($event)"
+              class="basic-info-form__file-input"
+              [disabled]="isUploading"
+            />
+            <label for="coverImgFile" class="basic-info-form__file-label" [class.basic-info-form__file-label--disabled]="isUploading">
+              <app-form-icon name="plus" [size]="20" color="#52679C"></app-form-icon>
+              <span>{{ isUploading ? 'Przesyłanie...' : (selectedFile ? selectedFile.name : 'Wybierz zdjęcie') }}</span>
+            </label>
+            
+            <!-- Podgląd wybranego pliku -->
+            <div class="basic-info-form__image-preview" *ngIf="imagePreviewUrl && !isUploading">
+              <img [src]="imagePreviewUrl" alt="Preview" />
+              <button
+                type="button"
+                class="basic-info-form__image-remove"
+                (click)="removeSelectedFile()"
+                aria-label="Usuń wybrane zdjęcie">
+                <app-form-icon name="x" [size]="16" color="#fff"></app-form-icon>
+              </button>
+            </div>
+
+            <!-- Przycisk uploadu -->
+            <button
+              type="button"
+              class="basic-info-form__upload-button"
+              *ngIf="selectedFile && !isUploading"
+              (click)="uploadImage()">
+              <app-form-icon name="plus" [size]="16" color="#fff"></app-form-icon>
+              Prześlij zdjęcie
+            </button>
+
+            <!-- Podgląd już przesłanego zdjęcia -->
+            <div class="basic-info-form__image-preview" *ngIf="form.get('coverImgUrl')?.value && isCurrentImageLocalFile() && !selectedFile">
+              <img [src]="form.get('coverImgUrl')?.value" alt="Uploaded preview" />
+              <button
+                type="button"
+                class="basic-info-form__image-remove"
+                (click)="removeCoverImage()"
+                aria-label="Usuń zdjęcie">
+                <app-form-icon name="x" [size]="16" color="#fff"></app-form-icon>
+              </button>
             </div>
           </div>
         </div>

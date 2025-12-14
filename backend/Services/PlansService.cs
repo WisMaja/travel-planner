@@ -24,12 +24,17 @@ namespace backend.Services
                 .OrderByDescending(p => p.CreatedAtUtc)
                 .ToListAsync();
 
+            var planIds = plans.Select(p => p.PlansId).ToList();
+            var basicInfos = await _dbContext.PlansBasicInfo
+                .Where(bi => planIds.Contains(bi.PlanId))
+                .ToDictionaryAsync(bi => bi.PlanId);
+
             var statusIds = plans.Select(p => p.StatusId).Distinct().ToList();
             var statuses = await _dbContext.PlanStatus
                 .Where(s => statusIds.Contains(s.StatusId))
                 .ToDictionaryAsync(s => s.StatusId);
 
-            return plans.Select(p => MapToDto(p, statuses.GetValueOrDefault(p.StatusId))).ToList();
+            return plans.Select(p => MapToDto(p, statuses.GetValueOrDefault(p.StatusId), basicInfos.GetValueOrDefault(p.PlansId))).ToList();
         }
 
         public async Task<List<PlansDto>> GetPublicPlansAsync()
@@ -39,12 +44,17 @@ namespace backend.Services
                 .OrderByDescending(p => p.CreatedAtUtc)
                 .ToListAsync();
 
+            var planIds = plans.Select(p => p.PlansId).ToList();
+            var basicInfos = await _dbContext.PlansBasicInfo
+                .Where(bi => planIds.Contains(bi.PlanId))
+                .ToDictionaryAsync(bi => bi.PlanId);
+
             var statusIds = plans.Select(p => p.StatusId).Distinct().ToList();
             var statuses = await _dbContext.PlanStatus
                 .Where(s => statusIds.Contains(s.StatusId))
                 .ToDictionaryAsync(s => s.StatusId);
 
-            return plans.Select(p => MapToDto(p, statuses.GetValueOrDefault(p.StatusId))).ToList();
+            return plans.Select(p => MapToDto(p, statuses.GetValueOrDefault(p.StatusId), basicInfos.GetValueOrDefault(p.PlansId))).ToList();
         }
 
         public async Task<PlansDto?> GetPlanByIdAsync(Guid planId)
@@ -55,10 +65,13 @@ namespace backend.Services
             if (plan == null)
                 return null;
 
+            var basicInfo = await _dbContext.PlansBasicInfo
+                .FirstOrDefaultAsync(bi => bi.PlanId == planId);
+
             var status = await _dbContext.PlanStatus
                 .FirstOrDefaultAsync(s => s.StatusId == plan.StatusId);
 
-            return MapToDto(plan, status);
+            return MapToDto(plan, status, basicInfo);
         }
 
         public async Task<PlansDto> CreateEmptyPlanAsync(Guid userId)
@@ -234,13 +247,17 @@ namespace backend.Services
         /// <summary>
         /// Mapuje model bazy danych na DTO
         /// </summary>
-        private PlansDto MapToDto(Plans plan, PlanStatus? status = null)
+        private PlansDto MapToDto(Plans plan, PlanStatus? status = null, PlansBasicInfo? basicInfo = null)
         {
+            // Użyj destination z Plans, jeśli jest dostępne, w przeciwnym razie z PlansBasicInfo (dla kompatybilności wstecznej)
+            var destination = plan.Destination ?? basicInfo?.Destination;
+            
             return new PlansDto
             {
                 PlansId = plan.PlansId,
                 OwnerId = plan.OwnerId,
                 Title = plan.Title,
+                Destination = destination,
                 StatusId = plan.StatusId,
                 StatusName = status?.Name,
                 IsPublic = plan.IsPublic,

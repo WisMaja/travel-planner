@@ -8,6 +8,7 @@ namespace backend.DTOs
         public Guid PlansId { get; set; }
         public Guid OwnerId { get; set; }
         public string? Title { get; set; }
+        public string? Destination { get; set; }
         public int StatusId { get; set; }
         public string? StatusName { get; set; }
         public bool IsPublic { get; set; }

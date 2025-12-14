@@ -7,6 +7,7 @@ export interface Plan {
   plansId: string;
   ownerId: string;
   title: string | null;
+  destination: string | null;
   statusId: number;
   statusName: string | null;
   isPublic: boolean;

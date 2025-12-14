@@ -21,6 +21,11 @@ namespace backend.Models
         public string? Title { get; set; }
         
         /// <summary>
+        /// Cel podróży (np. "Paryż, Francja")
+        /// </summary>
+        public string? Destination { get; set; }
+        
+        /// <summary>
         /// Identyfikator statusu planu (klucz obcy do PlanStatus)
         /// </summary>
         public int StatusId { get; set; }
