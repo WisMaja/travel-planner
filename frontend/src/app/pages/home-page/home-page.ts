@@ -56,7 +56,7 @@ export class HomePage implements OnInit {
       where: plan.title || 'Brak lokalizacji',
       date: this.formatDate(plan.createdAtUtc),
       title: plan.title || 'Bez tytułu',
-      imageUrl: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=400&h=300&fit=crop' // Domyślne zdjęcie
+      imageUrl: plan.coverImageUrl || undefined // Użyj zdjęcia z bazy, jeśli nie ma - undefined (placeholder się wyświetli)
     }));
   }
 

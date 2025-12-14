@@ -4,7 +4,11 @@
       *ngIf="imageUrl && !imageError" 
       [src]="imageUrl" 
       [alt]="title || 'Trip'"
-      (error)="onImageError()" />
+      (error)="onImageError()"
+      loading="lazy" />
+    <div class="trip-view__image-placeholder" *ngIf="!imageUrl || imageError">
+      <app-form-icon name="map" [size]="32" color="rgba(82, 103, 156, 0.5)"></app-form-icon>
+    </div>
   </div>
   <div class="trip-view__information">
     <div class="trip-view__where" *ngIf="where">{{ where }}</div>

@@ -10,6 +10,7 @@ export interface Plan {
   statusId: number;
   statusName: string | null;
   isPublic: boolean;
+  coverImageUrl: string | null;
   createdAtUtc: string;
   updatedAtUtc: string;
   deletedAtUtc: string | null;

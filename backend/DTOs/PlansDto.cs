@@ -11,6 +11,7 @@ namespace backend.DTOs
         public int StatusId { get; set; }
         public string? StatusName { get; set; }
         public bool IsPublic { get; set; }
+        public string? CoverImageUrl { get; set; }
         public DateTime CreatedAtUtc { get; set; }
         public DateTime UpdatedAtUtc { get; set; }
         public DateTime? DeletedAtUtc { get; set; }
@@ -35,6 +36,7 @@ namespace backend.DTOs
         public string? Title { get; set; }
         public int? StatusId { get; set; }
         public bool? IsPublic { get; set; }
+        public string? CoverImageUrl { get; set; }
     }
 }
 

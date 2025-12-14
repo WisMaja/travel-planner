@@ -175,6 +175,9 @@ namespace backend.Services
             if (dto.IsPublic.HasValue)
                 plan.IsPublic = dto.IsPublic.Value;
 
+            if (dto.CoverImageUrl != null)
+                plan.CoverImageUrl = dto.CoverImageUrl;
+
             plan.UpdatedAtUtc = DateTime.UtcNow;
 
             await _dbContext.SaveChangesAsync();
@@ -223,6 +226,7 @@ namespace backend.Services
                 StatusId = plan.StatusId,
                 StatusName = status?.Name,
                 IsPublic = plan.IsPublic,
+                CoverImageUrl = plan.CoverImageUrl,
                 CreatedAtUtc = plan.CreatedAtUtc,
                 UpdatedAtUtc = plan.UpdatedAtUtc,
                 DeletedAtUtc = plan.DeletedAtUtc

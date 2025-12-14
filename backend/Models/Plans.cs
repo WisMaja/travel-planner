@@ -31,6 +31,11 @@ namespace backend.Models
         public bool IsPublic { get; set; }
         
         /// <summary>
+        /// URL do zdjęcia okładki planu
+        /// </summary>
+        public string? CoverImageUrl { get; set; }
+        
+        /// <summary>
         /// Data utworzenia planu (UTC)
         /// </summary>
         public DateTime CreatedAtUtc { get; set; }
