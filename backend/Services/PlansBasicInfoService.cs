@@ -138,16 +138,27 @@ namespace backend.Services
                 if (dto.EndDate.HasValue)
                     basicInfo.EndDate = dto.EndDate.Value;
 
+                // Obsługa TripTypeId - jeśli jest null, ustawiamy na null; jeśli ma wartość, sprawdzamy czy istnieje
                 if (dto.TripTypeId.HasValue)
                 {
-                    var tripTypeExists = await _dbContext.TripType
-                        .AnyAsync(t => t.TripTypeId == dto.TripTypeId.Value);
+                    // Jeśli jest Guid.Empty, ustawiamy na null (wyczyszczenie wartości)
+                    if (dto.TripTypeId.Value == Guid.Empty)
+                    {
+                        basicInfo.TripTypeId = null;
+                    }
+                    else
+                    {
+                        // Sprawdź czy TripType istnieje
+                        var tripTypeExists = await _dbContext.TripType
+                            .AnyAsync(t => t.TripTypeId == dto.TripTypeId.Value);
 
-                    if (!tripTypeExists)
-                        throw new ArgumentException($"TripType o ID {dto.TripTypeId.Value} nie istnieje");
+                        if (!tripTypeExists)
+                            throw new ArgumentException($"TripType o ID {dto.TripTypeId.Value} nie istnieje");
 
-                    basicInfo.TripTypeId = dto.TripTypeId.Value;
+                        basicInfo.TripTypeId = dto.TripTypeId.Value;
+                    }
                 }
+                // Jeśli TripTypeId nie jest wysłane (null), nie aktualizujemy pola
 
                 if (dto.CoverImgUrl != null)
                     basicInfo.CoverImgUrl = dto.CoverImgUrl;

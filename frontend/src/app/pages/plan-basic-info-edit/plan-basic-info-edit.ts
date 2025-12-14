@@ -113,10 +113,14 @@ export class PlanBasicInfoEdit implements OnInit {
 
     // Obsługa typów podróży (na razie tylko pierwszy typ, bo backend ma tylko jeden TripTypeId)
     if (data.tripTypeId) {
-      const tripTypeArray = this.tripTypeIdsFormArray;
-      tripTypeArray.clear();
-      // TripTypeId jest już Guid (string), więc używamy bezpośrednio
-      tripTypeArray.push(this.fb.control(data.tripTypeId));
+      // Sprawdź czy tripTypeId jest prawidłowym Guid
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (guidRegex.test(data.tripTypeId)) {
+        const tripTypeArray = this.tripTypeIdsFormArray;
+        tripTypeArray.clear();
+        // TripTypeId jest już Guid (string), więc używamy bezpośrednio
+        tripTypeArray.push(this.fb.control(data.tripTypeId));
+      }
     }
 
     // Custom trip types - jeśli backend będzie je obsługiwał w przyszłości
@@ -167,13 +171,17 @@ export class PlanBasicInfoEdit implements OnInit {
     // Obsługa typów podróży - na razie tylko pierwszy typ (backend ma tylko TripTypeId: Guid?)
     const tripTypeIds = formValue.tripTypeIds || [];
     if (tripTypeIds.length > 0) {
-      // TripTypeId jest Guid (string), więc używamy bezpośrednio
-      updateData.tripTypeId = tripTypeIds[0];
-    } else {
-      updateData.tripTypeId = null;
+      const tripTypeId = tripTypeIds[0];
+      // Sprawdź czy tripTypeId jest prawidłowym Guid (format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (tripTypeId && guidRegex.test(tripTypeId)) {
+        updateData.tripTypeId = tripTypeId;
+      }
+      // Jeśli nie jest prawidłowym Guid, nie dodawaj go (backend użyje null)
     }
+    // Jeśli nie ma wybranego trip type, nie dodawaj tripTypeId (backend użyje null)
 
-    // Usuń null/undefined wartości
+    // Usuń null/undefined/puste wartości (ale zachowaj tripTypeId jeśli jest ustawiony)
     Object.keys(updateData).forEach(key => {
       if (updateData[key] === null || updateData[key] === undefined || updateData[key] === '') {
         delete updateData[key];
