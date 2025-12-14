@@ -17,6 +17,16 @@ namespace backend.Models
         public string? Description { get; set; }
         
         /// <summary>
+        /// Lokalizacja startowa (np. "Warszawa, Polska")
+        /// </summary>
+        public string? Location { get; set; }
+        
+        /// <summary>
+        /// Cel podróży (np. "Paryż, Francja")
+        /// </summary>
+        public string? Destination { get; set; }
+        
+        /// <summary>
         /// Data rozpoczęcia podróży
         /// </summary>
         public DateTime? StartDate { get; set; }
@@ -29,7 +39,7 @@ namespace backend.Models
         /// <summary>
         /// Identyfikator typu podróży (klucz obcy do TripType)
         /// </summary>
-        public int? TripTypeId { get; set; }
+        public Guid? TripTypeId { get; set; }
         
         /// <summary>
         /// URL do zdjęcia okładkowego planu
@@ -40,6 +50,11 @@ namespace backend.Models
         /// Budżet planu
         /// </summary>
         public decimal? BudgetAmount { get; set; }
+        
+        /// <summary>
+        /// Waluta budżetu (np. "PLN", "EUR", "USD")
+        /// </summary>
+        public string? BudgetCurrency { get; set; }
         
         /// <summary>
         /// Dodatkowe notatki

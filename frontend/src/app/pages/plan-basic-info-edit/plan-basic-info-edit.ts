@@ -1,12 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { Button } from '../components/ui/buttons/button/button';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
 import { TopBarPlan } from '../components/plan/top-bar-plan/top-bar-plan';
 import { GoogleMapComponent, MapPlace } from '../components/maps/google-map/google-map';
+import { PlansBasicInfoService } from '../../services/plans-basic-info.service';
 
 @Component({
   selector: 'app-plan-basic-info-edit',
@@ -14,9 +15,14 @@ import { GoogleMapComponent, MapPlace } from '../components/maps/google-map/goog
   templateUrl: './plan-basic-info-edit.html',
   styleUrl: './plan-basic-info-edit.scss',
 })
-export class PlanBasicInfoEdit {
+export class PlanBasicInfoEdit implements OnInit {
   form: FormGroup;
   newCustomType = '';
+  planId: string | null = null;
+  isLoading = false;
+  isSaving = false;
+  errorMessage: string | null = null;
+  successMessage: string | null = null;
 
   tripTypes = [
     { id: '1', name: 'Wypoczynek' },
@@ -41,7 +47,9 @@ export class PlanBasicInfoEdit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    private plansBasicInfoService: PlansBasicInfoService
   ) {
     this.form = this.fb.group({
       title: [''],
@@ -55,6 +63,145 @@ export class PlanBasicInfoEdit {
       budgetAmount: [''],
       budgetCurrency: ['PLN'],
       coverImgUrl: ['']
+    });
+  }
+
+  ngOnInit(): void {
+    // Pobierz planId z queryParams
+    this.route.queryParams.subscribe(params => {
+      this.planId = params['planId'] || null;
+      if (this.planId) {
+        this.loadPlanData();
+      } else {
+        this.errorMessage = 'Brak ID planu. Nie można załadować danych.';
+      }
+    });
+  }
+
+  loadPlanData(): void {
+    if (!this.planId) return;
+
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    this.plansBasicInfoService.getBasicInfo(this.planId).subscribe({
+      next: (data) => {
+        this.isLoading = false;
+        this.populateForm(data);
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('Error loading plan data:', error);
+        this.errorMessage = 'Nie udało się załadować danych planu. Spróbuj ponownie.';
+      }
+    });
+  }
+
+  populateForm(data: any): void {
+    // Wypełnij formularz danymi z API
+    this.form.patchValue({
+      title: data.title || '',
+      description: data.description || '',
+      location: data.location || '',
+      destination: data.destination || '',
+      startDate: data.startDate ? this.formatDateForInput(data.startDate) : '',
+      endDate: data.endDate ? this.formatDateForInput(data.endDate) : '',
+      budgetAmount: data.budgetAmount || '',
+      budgetCurrency: data.budgetCurrency || 'PLN',
+      coverImgUrl: data.coverImgUrl || data.coverImageUrl || ''
+    });
+
+    // Obsługa typów podróży (na razie tylko pierwszy typ, bo backend ma tylko jeden TripTypeId)
+    if (data.tripTypeId) {
+      const tripTypeArray = this.tripTypeIdsFormArray;
+      tripTypeArray.clear();
+      // TripTypeId jest już Guid (string), więc używamy bezpośrednio
+      tripTypeArray.push(this.fb.control(data.tripTypeId));
+    }
+
+    // Custom trip types - jeśli backend będzie je obsługiwał w przyszłości
+    // Na razie zostawiamy puste
+  }
+
+  formatDateForInput(dateString: string): string {
+    // Konwertuj datę z formatu ISO (np. "2024-07-01T00:00:00Z") na format input date (YYYY-MM-DD)
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  onSave(): void {
+    if (!this.planId) {
+      this.errorMessage = 'Brak ID planu. Nie można zapisać danych.';
+      return;
+    }
+
+    if (this.form.invalid) {
+      this.errorMessage = 'Formularz zawiera błędy. Sprawdź wprowadzone dane.';
+      return;
+    }
+
+    this.isSaving = true;
+    this.errorMessage = null;
+    this.successMessage = null;
+
+    const formValue = this.form.value;
+
+    // Przygotuj dane do wysłania (zgodnie z UpdatePlansBasicInfoDto)
+    const updateData: any = {
+      title: formValue.title || null,
+      description: formValue.description || null,
+      location: formValue.location || null,
+      destination: formValue.destination || null,
+      startDate: formValue.startDate ? new Date(formValue.startDate).toISOString() : null,
+      endDate: formValue.endDate ? new Date(formValue.endDate).toISOString() : null,
+      budgetAmount: formValue.budgetAmount ? parseFloat(formValue.budgetAmount) : null,
+      budgetCurrency: formValue.budgetCurrency || null,
+      coverImgUrl: formValue.coverImgUrl || null,
+      coverImageUrl: formValue.coverImgUrl || null, // Również dla Plans.CoverImageUrl
+    };
+
+    // Obsługa typów podróży - na razie tylko pierwszy typ (backend ma tylko TripTypeId: Guid?)
+    const tripTypeIds = formValue.tripTypeIds || [];
+    if (tripTypeIds.length > 0) {
+      // TripTypeId jest Guid (string), więc używamy bezpośrednio
+      updateData.tripTypeId = tripTypeIds[0];
+    } else {
+      updateData.tripTypeId = null;
+    }
+
+    // Usuń null/undefined wartości
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === null || updateData[key] === undefined || updateData[key] === '') {
+        delete updateData[key];
+      }
+    });
+
+    this.plansBasicInfoService.updateBasicInfo(this.planId, updateData).subscribe({
+      next: (updatedData) => {
+        this.isSaving = false;
+        this.successMessage = 'Dane zostały zapisane pomyślnie!';
+        
+        // Przekieruj po 1 sekundzie
+        setTimeout(() => {
+          this.router.navigate(['/plan/basic-info'], {
+            queryParams: { planId: this.planId }
+          });
+        }, 1000);
+      },
+      error: (error) => {
+        this.isSaving = false;
+        console.error('Error saving plan data:', error);
+        
+        if (error.error?.message) {
+          this.errorMessage = error.error.message;
+        } else {
+          this.errorMessage = 'Nie udało się zapisać danych. Spróbuj ponownie.';
+        }
+      }
     });
   }
 

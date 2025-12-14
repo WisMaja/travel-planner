@@ -1,4 +1,14 @@
 <div class="basic-info-edit">
+  <!-- Success/Error Messages -->
+  <div class="message-container" *ngIf="successMessage || errorMessage">
+    <div class="message" [class.message--success]="successMessage" [class.message--error]="errorMessage">
+      <span class="message__text">{{ successMessage || errorMessage }}</span>
+      <button type="button" class="message__close" (click)="successMessage = null; errorMessage = null" aria-label="Zamknij">
+        <app-form-icon name="x" [size]="16" color="currentColor"></app-form-icon>
+      </button>
+    </div>
+  </div>
+
   <!-- Top Bar with Steps -->
   <top-bar-plan
     [steps]="[
@@ -12,9 +22,16 @@
   </top-bar-plan>
 
   <div class="basic-info-edit__container">
+    <!-- Loading Indicator -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <div class="loading-spinner">
+        <p>Ładowanie danych planu...</p>
+      </div>
+    </div>
+
     <!-- Form Section -->
-    <div class="basic-info-edit__form-section">
-      <form class="basic-info-form" [formGroup]="form">
+    <div class="basic-info-edit__form-section" [class.basic-info-edit__form-section--loading]="isLoading">
+      <form class="basic-info-form" [formGroup]="form" (ngSubmit)="onSave(); $event.preventDefault()">
         <!-- Title as editable header -->
         <input
           id="title"
@@ -257,8 +274,9 @@
         <div class="basic-info-form__actions">
           <app-button
             variant="basic-accept"
-            label="Akceptuj"
-            navigateTo="/plan/basic-info">
+            [label]="isSaving ? 'Zapisywanie...' : 'Akceptuj'"
+            [disabled]="isSaving || isLoading"
+            (clicked)="onSave()">
           </app-button>
         </div>
       </form>
