@@ -7,6 +7,7 @@ import { Button } from '../components/ui/buttons/button/button';
 import { TopBarPlan } from '../components/plan/top-bar-plan/top-bar-plan';
 import { SearchBar } from '../components/home/search-bar/search-bar';
 import { GoogleMapComponent, MapPlace } from '../components/maps/google-map/google-map';
+import { PlanPlaceDto, PlanPlacesService } from '../../services/plan-places.service';
 
 type PlaceCategory = 'all' | 'restaurant' | 'hotel' | 'attraction' | 'shopping' | 'transport';
 type PlaceType = 'country' | 'city' | 'accommodation' | 'attraction' | 'food';
@@ -19,6 +20,7 @@ interface PlaceLink {
 
 interface Place {
   id: number;
+  guid: string;
   name: string;
   address: string;
   category: PlaceCategory;
@@ -49,15 +51,37 @@ export class PlanPlaces implements OnInit {
   planId: string | null = null;
   searchQuery: string = '';
   activePlaceType: PlaceType | 'all' = 'all';
+  isLoading: boolean = false;
+  loadError: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private planPlacesService: PlanPlacesService
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       this.planId = params['planId'] || null;
+      if (this.planId) {
+        this.fetchPlanPlaces(this.planId);
+      }
+    });
+  }
+
+  fetchPlanPlaces(planId: string): void {
+    this.isLoading = true;
+    this.loadError = null;
+    this.planPlacesService.getPlanPlaces(planId).subscribe({
+      next: (data) => {
+        this.selectedPlaces = this.mapPlanPlacesToUi(data);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Nie udało się pobrać miejsc', err);
+        this.loadError = 'Nie udało się pobrać miejsc planu.';
+        this.isLoading = false;
+      }
     });
   }
 
@@ -80,355 +104,59 @@ export class PlanPlaces implements OnInit {
     { id: 'food', name: 'Jedzenie' }
   ];
 
-  // Same data as plan-places-edit
-  selectedPlaces: Place[] = [
-    // Polska - Kraj
-    {
-      id: 100,
-      name: 'Polska',
-      address: 'Europa Środkowa',
-      category: 'attraction',
-      rating: 4.8,
-      reviews: 5000,
-      imageUrl: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop',
-      order: 1,
-      priority: 'high',
-      tags: ['europa', 'środkowa'],
-      notes: 'Główny cel podróży',
-      links: [],
-      isExpanded: false,
-      placeType: 'country',
-      parentId: undefined,
-      children: []
-    },
-    // Warszawa - Miasto w Polsce
-    {
-      id: 101,
-      name: 'Warszawa',
-      address: 'Mazowsze, Polska',
-      category: 'attraction',
-      rating: 4.6,
-      reviews: 3000,
-      imageUrl: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=400&h=300&fit=crop',
-      order: 2,
-      priority: 'high',
-      tags: ['stolica', 'kultura'],
-      notes: 'Stolica Polski',
-      links: [],
-      isExpanded: false,
-      placeType: 'city',
-      parentId: 100,
-      children: []
-    },
-    // Miejsca w Warszawie
-    {
-      id: 102,
-      name: 'Hotel Bristol',
-      address: 'ul. Krakowskie Przedmieście 42/44, Warszawa',
-      category: 'hotel',
-      rating: 4.8,
-      reviews: 567,
-      distance: '0.3 km',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
-      order: 3,
-      priority: 'high',
-      tags: ['luksusowy', 'centrum'],
-      notes: 'Zarezerwować pokój z widokiem',
-      links: [{ name: 'Strona hotelu', url: 'https://example.com/hotel-bristol' }],
-      isExpanded: false,
-      placeType: 'accommodation',
-      parentId: 101,
-      children: []
-    },
-    {
-      id: 103,
-      name: 'Zamek Królewski',
-      address: 'Plac Zamkowy 4, Warszawa',
-      category: 'attraction',
-      rating: 4.7,
-      reviews: 1234,
-      distance: '0.5 km',
-      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
-      order: 4,
-      priority: 'high',
-      tags: ['historia', 'zabytek'],
-      notes: 'Sprawdzić godziny otwarcia',
-      links: [{ name: 'Oficjalna strona', url: 'https://example.com/zamek' }],
-      isExpanded: false,
-      placeType: 'attraction',
-      parentId: 101,
-      children: []
-    },
-    {
-      id: 104,
-      name: 'Restauracja U Fukiera',
-      address: 'Rynek Starego Miasta 27, Warszawa',
-      category: 'restaurant',
-      rating: 4.5,
-      reviews: 890,
-      distance: '0.2 km',
-      imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
-      order: 5,
-      priority: 'medium',
-      tags: ['tradycyjna', 'polska kuchnia'],
-      notes: 'Zarezerwować stolik na 19:00',
-      links: [],
-      isExpanded: false,
-      placeType: 'food',
-      parentId: 101,
-      children: []
-    },
-    // Kraków - Miasto w Polsce
-    {
-      id: 105,
-      name: 'Kraków',
-      address: 'Małopolska, Polska',
-      category: 'attraction',
-      rating: 4.9,
-      reviews: 4500,
-      imageUrl: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop',
-      order: 6,
-      priority: 'high',
-      tags: ['kultura', 'historia'],
-      notes: 'Miasto królów',
-      links: [],
-      isExpanded: false,
-      placeType: 'city',
-      parentId: 100,
-      children: []
-    },
-    // Miejsca w Krakowie
-    {
-      id: 106,
-      name: 'Hotel Stary',
-      address: 'ul. Szczepańska 5, Kraków',
-      category: 'hotel',
-      rating: 4.7,
-      reviews: 432,
-      distance: '0.1 km',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
-      order: 7,
-      priority: 'medium',
-      tags: ['boutique', 'stare miasto'],
-      notes: 'Blisko Rynku',
-      links: [],
-      isExpanded: false,
-      placeType: 'accommodation',
-      parentId: 105,
-      children: []
-    },
-    {
-      id: 107,
-      name: 'Wawel',
-      address: 'Wawel 5, Kraków',
-      category: 'attraction',
-      rating: 4.8,
-      reviews: 2100,
-      distance: '0.8 km',
-      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
-      order: 8,
-      priority: 'high',
-      tags: ['zamek', 'historia'],
-      notes: 'Zwiedzić komnaty królewskie',
-      links: [{ name: 'Strona Wawelu', url: 'https://example.com/wawel' }],
-      isExpanded: false,
-      placeType: 'attraction',
-      parentId: 105,
-      children: []
-    },
-    {
-      id: 108,
-      name: 'Restauracja Wierzynek',
-      address: 'Rynek Główny 15, Kraków',
-      category: 'restaurant',
-      rating: 4.6,
-      reviews: 567,
-      distance: '0.2 km',
-      imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
-      order: 9,
-      priority: 'medium',
-      tags: ['elegancka', 'tradycyjna'],
-      notes: 'Słynna restauracja na Rynku',
-      links: [],
-      isExpanded: false,
-      placeType: 'food',
-      parentId: 105,
-      children: []
-    },
-    // Włochy - Kraj
-    {
-      id: 200,
-      name: 'Włochy',
-      address: 'Europa Południowa',
-      category: 'attraction',
-      rating: 4.9,
-      reviews: 8000,
-      imageUrl: 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop',
-      order: 10,
-      priority: 'high',
-      tags: ['europa', 'południe'],
-      notes: 'Kraj sztuki i kuchni',
-      links: [],
-      isExpanded: false,
-      placeType: 'country',
-      parentId: undefined,
-      children: []
-    },
-    // Rzym - Miasto we Włoszech
-    {
-      id: 201,
-      name: 'Rzym',
-      address: 'Lazio, Włochy',
-      category: 'attraction',
-      rating: 4.8,
-      reviews: 6000,
-      imageUrl: 'https://images.unsplash.com/photo-1529260830199-42c24126f198?w=400&h=300&fit=crop',
-      order: 11,
-      priority: 'high',
-      tags: ['stolica', 'historia'],
-      notes: 'Wieczne Miasto',
-      links: [],
-      isExpanded: false,
-      placeType: 'city',
-      parentId: 200,
-      children: []
-    },
-    // Miejsca w Rzymie
-    {
-      id: 202,
-      name: 'Hotel de Russie',
-      address: 'Via del Babuino 9, Rzym',
-      category: 'hotel',
-      rating: 4.9,
-      reviews: 789,
-      distance: '0.5 km',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
-      order: 12,
-      priority: 'high',
-      tags: ['luksusowy', 'centrum'],
-      notes: 'Blisko Panteonu',
-      links: [],
-      isExpanded: false,
-      placeType: 'accommodation',
-      parentId: 201,
-      children: []
-    },
-    {
-      id: 203,
-      name: 'Koloseum',
-      address: 'Piazza del Colosseo, Rzym',
-      category: 'attraction',
-      rating: 4.7,
-      reviews: 5000,
-      distance: '1.2 km',
-      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
-      order: 13,
-      priority: 'high',
-      tags: ['zabytek', 'rzym'],
-      notes: 'Kupić bilety z wyprzedzeniem',
-      links: [{ name: 'Bilety online', url: 'https://example.com/colosseum' }],
-      isExpanded: false,
-      placeType: 'attraction',
-      parentId: 201,
-      children: []
-    },
-    {
-      id: 204,
-      name: 'Trattoria da Enzo',
-      address: 'Via dei Vascellari 29, Rzym',
-      category: 'restaurant',
-      rating: 4.6,
-      reviews: 1234,
-      distance: '0.8 km',
-      imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
-      order: 14,
-      priority: 'medium',
-      tags: ['tradycyjna', 'włoska'],
-      notes: 'Autentyczna kuchnia rzymska',
-      links: [],
-      isExpanded: false,
-      placeType: 'food',
-      parentId: 201,
-      children: []
-    },
-    // Wenecja - Miasto we Włoszech
-    {
-      id: 205,
-      name: 'Wenecja',
-      address: 'Veneto, Włochy',
-      category: 'attraction',
-      rating: 4.7,
-      reviews: 3500,
-      imageUrl: 'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=400&h=300&fit=crop',
-      order: 15,
-      priority: 'high',
-      tags: ['romantyczna', 'kanały'],
-      notes: 'Miasto na wodzie',
-      links: [],
-      isExpanded: false,
-      placeType: 'city',
-      parentId: 200,
-      children: []
-    },
-    // Miejsca w Wenecji
-    {
-      id: 206,
-      name: 'Hotel Danieli',
-      address: 'Riva degli Schiavoni 4196, Wenecja',
-      category: 'hotel',
-      rating: 4.8,
-      reviews: 654,
-      distance: '0.3 km',
-      imageUrl: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400&h=300&fit=crop',
-      order: 16,
-      priority: 'high',
-      tags: ['luksusowy', 'widok'],
-      notes: 'Widok na lagunę',
-      links: [],
-      isExpanded: false,
-      placeType: 'accommodation',
-      parentId: 205,
-      children: []
-    },
-    {
-      id: 207,
-      name: 'Plac Św. Marka',
-      address: 'Piazza San Marco, Wenecja',
-      category: 'attraction',
-      rating: 4.9,
-      reviews: 2800,
-      distance: '0.1 km',
-      imageUrl: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop',
-      order: 17,
-      priority: 'high',
-      tags: ['plac', 'zabytki'],
-      notes: 'Główny plac Wenecji',
-      links: [],
-      isExpanded: false,
-      placeType: 'attraction',
-      parentId: 205,
-      children: []
-    },
-    {
-      id: 208,
-      name: 'Osteria alle Testiere',
-      address: 'Calle del Mondo Novo 5801, Wenecja',
-      category: 'restaurant',
-      rating: 4.7,
-      reviews: 456,
-      distance: '0.4 km',
-      imageUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
-      order: 18,
-      priority: 'medium',
-      tags: ['seafood', 'tradycyjna'],
-      notes: 'Słynna z owoców morza',
-      links: [],
-      isExpanded: false,
-      placeType: 'food',
-      parentId: 205,
-      children: []
-    }
-  ];
+  selectedPlaces: Place[] = [];
+
+  private toPlaceType(kind?: string | null): PlaceType {
+    const normalized = (kind || '').toLowerCase();
+    if (normalized === 'country') return 'country';
+    if (normalized === 'city') return 'city';
+    if (normalized === 'hotel' || normalized === 'accommodation' || normalized === 'nocleg') return 'accommodation';
+    if (normalized === 'restaurant' || normalized === 'food' || normalized === 'jedzenie') return 'food';
+    if (normalized === 'attraction' || normalized === 'atrakcja') return 'attraction';
+    return 'attraction';
+  }
+
+  private mapPlanPlacesToUi(data: PlanPlaceDto[]): Place[] {
+    // nadaj lokalne numery ID aby utrzymać relacje parentId dla UI i mapy
+    const idMap = new Map<string, number>();
+    data.forEach((item, index) => idMap.set(item.plansPlacesId, index + 1));
+
+    const mapped: Place[] = data.map((item, index) => {
+      const parentNumeric = item.parentId ? idMap.get(item.parentId) : undefined;
+      return {
+        id: index + 1,
+        guid: item.plansPlacesId,
+        name: item.name || item.place?.name || 'Miejsce',
+        address: item.place?.address || '',
+        category: 'attraction',
+        rating: 0,
+        reviews: 0,
+        order: item.level,
+        priority: undefined,
+        tags: [],
+        notes: undefined,
+        links: [],
+        isExpanded: false,
+        placeType: this.toPlaceType(item.kind),
+        parentId: parentNumeric,
+        children: [],
+        variants: []
+      };
+    });
+
+    // zbuduj drzewo dzieci
+    mapped.forEach(place => {
+      if (place.parentId) {
+        const parent = mapped.find(p => p.id === place.parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(place);
+        }
+      }
+    });
+
+    return mapped;
+  }
 
   get placesForMap(): MapPlace[] {
     // Konwertuj miejsca do formatu MapPlace
@@ -447,7 +175,8 @@ export class PlanPlaces implements OnInit {
         id: place.id,
         name: place.name,
         address: place.address,
-        placeType: place.placeType
+        // zapasowy typ gdyby backend nie podał kind
+        placeType: place.placeType ?? 'attraction'
       }));
   }
 
@@ -533,6 +262,7 @@ export class PlanPlaces implements OnInit {
     if (unassignedPlaces.length > 0) {
       const unassignedCountry: Place = {
         id: -1,
+        guid: 'unassigned',
         name: 'Miejsca bez przypisania',
         address: 'Miejsca nieprzypisane do kraju ani miasta',
         category: 'attraction',
