@@ -266,5 +266,31 @@ export class PlacesAutocompleteComponent implements AfterViewInit, OnDestroy {
     this.previewPlace = null;
     this.clear();
   }
+
+  /**
+   * Ponownie inicjalizuje autocomplete (użyteczne gdy komponent jest ukryty/pokazywany)
+   */
+  reinitialize(): void {
+    // Wyczyść istniejące autocomplete jeśli istnieje
+    if (this.autocomplete) {
+      google.maps.event.clearInstanceListeners(this.autocomplete);
+      this.autocomplete = null;
+    }
+
+    // Wyczyść timer jeśli istnieje
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
+
+    // Zresetuj flagi
+    this.isLoaded = false;
+    this.errorMessage = '';
+    this.previewPlace = null;
+    this.isLoading = false;
+
+    // Ponownie zainicjalizuj
+    this.initializeAutocomplete();
+  }
 }
 

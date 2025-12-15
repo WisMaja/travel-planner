@@ -50,13 +50,6 @@ namespace backend.Connection
             modelBuilder.Entity<PlansBasicInfo>()
                 .HasKey(pbi => pbi.PlanId);
 
-            // Konfiguracja relacji PlansBasicInfo -> Plans
-            modelBuilder.Entity<PlansBasicInfo>()
-                .HasOne<Plans>()
-                .WithOne()
-                .HasForeignKey<PlansBasicInfo>(pbi => pbi.PlanId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             modelBuilder.Entity<PlanStatus>()
                 .HasKey(ps => ps.StatusId);
 

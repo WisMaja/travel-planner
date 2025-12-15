@@ -1,0 +1,118 @@
+<div 
+  class="add-place-modal__overlay" 
+  *ngIf="isOpen"
+  (click)="onBackdropClick($event)">
+  <div class="add-place-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="add-place-modal__header">
+      <h2 class="add-place-modal__title">Dodaj miejsce</h2>
+      <button 
+        type="button"
+        class="add-place-modal__close"
+        (click)="onClose()"
+        aria-label="Zamknij">
+        <app-form-icon name="x" [size]="20" color="currentColor"></app-form-icon>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="add-place-modal__content">
+      <!-- Left Side - Search and Results -->
+      <div class="add-place-modal__left">
+        <!-- Search -->
+        <div class="add-place-modal__search">
+          <app-places-autocomplete
+            placeholder="Wyszukaj miejsce..."
+            [value]="searchQuery"
+            [showPreview]="false"
+            [minQueryLength]="3"
+            (placeSelected)="onPlaceSelected($event)"
+            (placePreview)="onPlacePreview($event)"
+            (valueChange)="onSearchValueChange($event)">
+          </app-places-autocomplete>
+        </div>
+
+        <!-- Results List -->
+        <div class="add-place-modal__results">
+          <div class="results-header">
+            <h3 class="results-header__title">
+              Znalezione miejsca
+              <span class="results-header__count" *ngIf="searchResults.length > 0">
+                ({{ searchResults.length }})
+              </span>
+            </h3>
+          </div>
+
+          <div class="results-list" *ngIf="searchResults.length > 0; else emptyState">
+            <div 
+              class="result-item"
+              *ngFor="let place of searchResults"
+              [class.result-item--selected]="selectedPlace?.placeId === place.placeId">
+              <div class="result-item__content">
+                <div class="result-item__image" *ngIf="place.imageUrl">
+                  <img [src]="place.imageUrl" [alt]="place.name" />
+                </div>
+                <div class="result-item__info">
+                  <h4 class="result-item__name">{{ place.name }}</h4>
+                  <div class="result-item__address">
+                    <app-form-icon name="location" [size]="12" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                    <span>{{ place.address || place.formattedAddress }}</span>
+                  </div>
+                  <div class="result-item__meta" *ngIf="place.rating">
+                    <span class="result-item__rating">
+                      ⭐ {{ place.rating }}
+                      <span *ngIf="place.userRatingsTotal"> ({{ place.userRatingsTotal }})</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="result-item__actions">
+                <app-button
+                  variant="basic-accept"
+                  label="Dodaj"
+                  (clicked)="onAddPlace(place)">
+                  <span icon>
+                    <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
+                  </span>
+                </app-button>
+                <button
+                  type="button"
+                  class="result-item__remove"
+                  (click)="onRemovePlace(place.placeId)"
+                  aria-label="Usuń z listy">
+                  <app-form-icon name="x" [size]="14" color="rgba(220, 53, 69, 0.7)"></app-form-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #emptyState>
+            <div class="empty-state">
+              <div class="empty-state__icon">📍</div>
+              <h4 class="empty-state__title">Brak wyników</h4>
+              <p class="empty-state__message">
+                Wpisz nazwę miejsca, aby rozpocząć wyszukiwanie.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Right Side - Map -->
+      <div class="add-place-modal__right">
+        <div class="add-place-modal__map">
+          <app-google-map
+            [places]="mapPlaces"
+            [center]="mapCenter"
+            [zoom]="mapPlaces.length > 0 ? 15 : 6"
+            [height]="'100%'"
+            [width]="'100%'"
+            [autoFitBounds]="mapPlaces.length > 0"
+            [showControls]="true"
+            [displayMode]="'full'">
+          </app-google-map>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

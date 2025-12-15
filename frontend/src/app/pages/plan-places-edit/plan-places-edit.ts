@@ -10,6 +10,8 @@ import { Button } from '../components/ui/buttons/button/button';
 import { TopBarPlan } from '../components/plan/top-bar-plan/top-bar-plan';
 import { PlansBasicInfoService } from '../../services/plans-basic-info.service';
 import { PlanPlaceDto, PlanPlacesService } from '../../services/plan-places.service';
+import { AddPlaceModalComponent } from '../components/plan/add-place-modal/add-place-modal';
+import { PlaceResult as AutocompletePlaceResult } from '../components/maps/places-autocomplete/places-autocomplete';
 
 type PlaceCategory = 'all' | 'restaurant' | 'hotel' | 'attraction' | 'shopping' | 'transport';
 type PlaceType = 'country' | 'city' | 'accommodation' | 'attraction' | 'food';
@@ -60,7 +62,7 @@ interface PlaceResult {
 @Component({
   selector: 'app-plan-places-edit',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, SharedImports, FormIcon, GoogleMapComponent, SearchBar, Button, TopBarPlan],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, SharedImports, FormIcon, GoogleMapComponent, SearchBar, Button, TopBarPlan, AddPlaceModalComponent],
   templateUrl: './plan-places-edit.html',
   styleUrl: './plan-places-edit.scss',
 })
@@ -90,9 +92,28 @@ export class PlanPlacesEdit implements OnInit {
   }
 
   onAddPlaceClick(): void {
-    // placeholder na późniejszy komponent dodawania miejsc
-    this.successMessage = 'Dodawanie miejsc będzie dostępne wkrótce';
-    setTimeout(() => this.successMessage = null, 2000);
+    this.showAddPlaceModal = true;
+  }
+
+  onCloseAddPlaceModal(): void {
+    this.showAddPlaceModal = false;
+  }
+
+  onPlaceAddedFromModal(placeResult: AutocompletePlaceResult): void {
+    // Konwertuj PlaceResult z autocomplete na format używany w komponencie
+    const placeResultForComponent: PlaceResult = {
+      name: placeResult.name,
+      address: placeResult.address || placeResult.formattedAddress || '',
+      formattedAddress: placeResult.formattedAddress || placeResult.address || '',
+      types: placeResult.types || [],
+      rating: placeResult.rating,
+      imageUrl: placeResult.imageUrl,
+      lat: placeResult.lat,
+      lng: placeResult.lng
+    };
+
+    this.onPlaceSelectedFromMap(placeResultForComponent);
+    this.showAddPlaceModal = false;
   }
   
   priorities: { id: Priority; name: string }[] = [
@@ -110,6 +131,7 @@ export class PlanPlacesEdit implements OnInit {
   variantParentId: number | null = null;
   variantParentType: 'city' | 'country' | null = null;
   newVariantName: string = '';
+  showAddPlaceModal: boolean = false;
 
   constructor(
     private route: ActivatedRoute,

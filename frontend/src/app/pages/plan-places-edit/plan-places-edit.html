@@ -190,4 +190,10 @@
       </app-google-map>
     </div>
   </div>
+
+  <app-add-place-modal
+    [isOpen]="showAddPlaceModal"
+    (close)="onCloseAddPlaceModal()"
+    (placeAdded)="onPlaceAddedFromModal($event)">
+  </app-add-place-modal>
 </div>
