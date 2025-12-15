@@ -1,3 +1,18 @@
+@use '../plan-places/plan-places.scss' as *;
+
+.places-view__plan-name {
+  margin: 0 0 4px 0;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #52679c;
+}
+
+.places-view__plan-destination {
+  color: rgba(82, 103, 156, 0.8);
+  font-weight: 500;
+}
+
 .places-edit {
   display: flex;
   flex-direction: column;

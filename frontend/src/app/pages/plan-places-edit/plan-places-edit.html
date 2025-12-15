@@ -1,91 +1,4 @@
-<div class="places-edit">
-  <!-- Success/Error Messages -->
-  <div class="message-container" *ngIf="successMessage || errorMessage">
-    <div class="message" [class.message--success]="successMessage" [class.message--error]="errorMessage">
-      <span class="message__text">{{ successMessage || errorMessage }}</span>
-      <button type="button" class="message__close" (click)="dismissMessage()" aria-label="Zamknij">
-        <app-form-icon name="x" [size]="16" color="currentColor"></app-form-icon>
-      </button>
-    </div>
-  </div>
-
-  <!-- Delete Confirmation Modal -->
-  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal__header">
-        <h3 class="modal__title">Potwierdź usunięcie</h3>
-        <button type="button" class="modal__close" (click)="cancelDelete()" aria-label="Zamknij">
-          <app-form-icon name="x" [size]="20" color="currentColor"></app-form-icon>
-        </button>
-      </div>
-      <div class="modal__content">
-        <p>Czy na pewno chcesz usunąć to miejsce z planu? Ta operacja jest nieodwracalna.</p>
-        <p class="modal__warning" *ngIf="placeToDelete">
-          <strong>Uwaga:</strong> Wszystkie miejsca powiązane z tym miejscem również zostaną usunięte.
-        </p>
-      </div>
-      <div class="modal__actions">
-        <app-button
-          variant="basic-accept"
-          label="Anuluj"
-          (clicked)="cancelDelete()">
-        </app-button>
-        <app-button
-          variant="basic-accept"
-          label="Usuń"
-          (clicked)="confirmDelete()">
-          <span icon>
-            <app-form-icon name="trash" [size]="12" color="#52679C"></app-form-icon>
-          </span>
-        </app-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Variant Creation Modal -->
-  <div class="modal-overlay" *ngIf="showVariantModal" (click)="closeVariantModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal__header">
-        <h3 class="modal__title">Utwórz nowy wariant</h3>
-        <button type="button" class="modal__close" (click)="closeVariantModal()" aria-label="Zamknij">
-          <app-form-icon name="x" [size]="20" color="currentColor"></app-form-icon>
-        </button>
-      </div>
-      <div class="modal__content">
-        <p>Utwórz nową listę miejsc dla {{ variantParentType === 'city' ? 'miasta' : 'kraju' }}. Możesz użyć tego do podziału miejsc na różne dni, warianty podróży itp.</p>
-        <div class="modal__input-group">
-          <label class="modal__label" for="variant-name">Nazwa wariantu</label>
-          <input
-            type="text"
-            id="variant-name"
-            class="modal__input"
-            [(ngModel)]="newVariantName"
-            placeholder="np. Dzień 1, Wariant A, Trasa 1"
-            (keydown.enter)="createVariant()"
-            maxlength="50"
-            aria-label="Nazwa wariantu"
-          />
-        </div>
-      </div>
-      <div class="modal__actions">
-        <app-button
-          variant="basic-accept"
-          label="Anuluj"
-          (clicked)="closeVariantModal()">
-        </app-button>
-        <app-button
-          variant="basic-accept"
-          label="Utwórz"
-          (clicked)="createVariant()">
-          <span icon>
-            <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
-          </span>
-        </app-button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Bar with Steps -->
+<div class="places-view">
   <top-bar-plan
     [steps]="[
       { label: 'Podstawowe', to: '/plan/basic-info', exact: false},
@@ -94,826 +7,187 @@
       { label: 'Rezerwacje',  to: '/plan/bookings', exact: false },
       { label: 'Checklist',   to: '/plan/checklist', exact: false },
       { label: 'Podgląd',     to: '/plan/overview', exact: false }
-    ]">
+    ]"
+    [planId]="planId">
   </top-bar-plan>
 
-  <div class="places-edit__container">
-    <!-- Save Button - Top Right -->
-    <div class="places-edit__save-button">
-      <app-button
-        variant="basic-accept"
-        label="Zapisz zmiany"
-        (clicked)="onSave()"
-        title="Zapisz wszystkie zmiany i wróć do widoku miejsc">
-        <span icon>
-          <app-form-icon name="file-text" [size]="14" color="#52679C"></app-form-icon>
-        </span>
-      </app-button>
-    </div>
-
-    <!-- Main Section: Selected Places (First Priority) -->
-    <div class="places-edit__selected-section places-edit__selected-section--main">
-      <div class="places-edit__header">
-        <div class="places-edit__header-left">
-          <h2 class="places-edit__title">
-            <app-form-icon name="location" [size]="16" color="#52679C"></app-form-icon>
-            Dodane miejsca
-          </h2>
-          <p class="places-edit__subtitle">
-            <span class="places-count">{{ selectedPlaces.length }}</span>
-            <span>{{ selectedPlaces.length === 1 ? 'miejsce' : selectedPlaces.length < 5 ? 'miejsca' : 'miejsc' }} w planie</span>
-          </p>
-        </div>
-        <!-- Place Type Filters -->
-        <div class="places-edit__place-type-filters">
-          <div class="filters-header">
-            <span class="filters-label">Filtruj:</span>
+  <div class="places-view__container">
+    <div class="places-view__content-section">
+      <div class="places-view__selected-section places-view__selected-section--main">
+        <div class="places-view__header">
+          <div>
+            <p class="places-view__plan-name" *ngIf="planName">
+              {{ planName }}
+              <span class="places-view__plan-destination" *ngIf="planDestination">· {{ planDestination }}</span>
+            </p>
+            <h2 class="places-view__title">Miejsca w planie (edycja)</h2>
+            <p class="places-view__subtitle">{{ selectedPlaces.length }} miejsc w planie</p>
           </div>
-          <div class="filters-buttons">
+          <div class="places-view__actions-inline">
             <app-button
-              *ngFor="let placeType of placeTypes"
-              [variant]="activePlaceType === placeType.id ? 'filter-active' : 'filter'"
-              [label]="placeType.name"
-              (clicked)="onFilterByPlaceType(placeType.id)"
-              [title]="'Pokaż tylko: ' + placeType.name">
+              variant="filter"
+              label="Dodaj miejsce"
+              (clicked)="onAddPlaceClick()">
             </app-button>
           </div>
         </div>
-      </div>
 
-      <div class="places-edit__selected-places">
-        <ng-container *ngIf="filteredSelectedPlaces.length > 0; else noPlacesSelected">
-          <div class="places-list" [class.places-list--hierarchical]="activePlaceType === 'all'">
-            <!-- Hierarchical view for "Wszystkie" -->
-            <ng-container *ngIf="activePlaceType === 'all'">
-              <ng-container *ngFor="let place of filteredSelectedPlaces; let i = index">
-                <!-- Place Card Template (reusable) -->
-                <ng-template #placeCard let-place let-index="index" let-isChild="isChild" let-parentChildren="parentChildren">
-                  <div class="place-card place-card--selected" [class.place-card--child]="isChild">
-                    <!-- Order Badge -->
-                    <div class="place-card__order" *ngIf="!isChild || (isChild && (place.placeType === 'city' || (place.placeType !== 'country' && place.placeType !== 'city')))">
-                      <span class="order-badge">{{ place.order || (index + 1) }}</span>
-                    </div>
+        <div class="places-view__place-type-filters">
+          <app-button
+            *ngFor="let placeType of placeTypes"
+            [variant]="activePlaceType === placeType.id ? 'filter-active' : 'filter'"
+            [label]="placeType.name"
+            (clicked)="onFilterByPlaceType(placeType.id)">
+          </app-button>
+        </div>
 
-                    <div class="place-card__image" *ngIf="place.imageUrl || (isChild && (place.placeType === 'city' || (place.placeType !== 'country' && place.placeType !== 'city')))">
-                      <img [src]="place.imageUrl || 'https://images.unsplash.com/photo-1515542622106-78bda8ba0e5b?w=400&h=300&fit=crop'" [alt]="place.name" />
-                    </div>
-                    <div class="place-card__content">
-                      <!-- Compact view for selected places - only essential info -->
-                      <div class="place-card__compact-info">
-                        <div class="place-card__name-row" *ngIf="!isChild && place.placeType === 'country'">
-                          <div class="place-card__name">{{ place.name }}</div>
-                          <!-- Order Controls (for countries) - obok nazwy -->
-                          <div class="place-card__order-controls place-card__order-controls--inline">
-                            <button 
-                              type="button"
-                              class="order-btn order-btn--inline"
-                              [disabled]="!canMoveUpCountry(place)"
-                              (click)="onMoveUp(place.id)"
-                              title="Przenieś wyżej w kolejności"
-                              aria-label="Przenieś wyżej">
-                              <app-form-icon name="sort" [size]="14" color="currentColor"></app-form-icon>
-                            </button>
-                            <button 
-                              type="button"
-                              class="order-btn order-btn--inline"
-                              [disabled]="!canMoveDownCountry(place)"
-                              (click)="onMoveDown(place.id)"
-                              title="Przenieś niżej w kolejności"
-                              aria-label="Przenieś niżej">
-                              <app-form-icon name="sort" [size]="14" color="currentColor"></app-form-icon>
-                            </button>
+        <div class="places-view__search">
+          <app-search-bar
+            placeholder="Szukaj w dodanych miejscach..."
+            [value]="searchQuery"
+            (valueChange)="onSearchChange($event)">
+          </app-search-bar>
+        </div>
+
+        <div class="places-view__selected-places">
+          <ng-container *ngIf="filteredSelectedPlaces.length > 0; else noPlacesSelected">
+            <div class="places-list places-list--hierarchical">
+              <ng-container *ngIf="activePlaceType === 'all'">
+                <ng-container *ngFor="let place of filteredSelectedPlaces; let i = index">
+                  <ng-template #placeCard let-place let-index="index" let-isChild="isChild" let-parentChildren="parentChildren">
+                    <div class="place-card place-card--selected" [class.place-card--child]="isChild">
+                      <div class="place-card__content">
+                        <div class="place-card__compact-info">
+                          <div class="place-card__name-row">
+                            <div class="place-card__name">{{ place.name }}</div>
+                            <div class="place-card__order-number">{{ place.order || (index + 1) }}</div>
                           </div>
-                        </div>
-                        <div class="place-card__name" *ngIf="isChild || place.placeType !== 'country'">{{ place.name }}</div>
-                        <div class="place-card__address" *ngIf="place.address">
-                          <app-form-icon name="location" [size]="14" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
-                          {{ place.address }}
-                        </div>
-                        <!-- Przycisk dodawania wariantu dla kraju - w nagłówku -->
-                        <div class="variant-button-container variant-button-container--inline" *ngIf="!isChild && place.placeType === 'country' && !isUnassignedPlace(place)">
-                          <button
-                            type="button"
-                            class="add-variant-btn add-variant-btn--inline"
-                            (click)="openVariantModal(place.id, 'country')"
-                            [attr.aria-label]="'Dodaj wariant dla ' + place.name"
-                            title="Dodaj nową listę miejsc dla tego kraju">
-                            <app-form-icon name="plus" [size]="12" color="currentColor"></app-form-icon>
-                            <span>Dodaj wariant</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- Additional info for cities -->
-                      <div class="place-card__additional-info" *ngIf="place.placeType === 'city' && isChild">
-                        <div class="place-card__stats">
-                          <span class="stat-item" *ngIf="place.children && place.children.length > 0">
-                            <app-form-icon name="location" [size]="14" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
-                            <span class="stat-value">{{ place.children.length }}</span>
-                            <span class="stat-label">miejsc</span>
-                          </span>
-                          <span class="stat-item" *ngIf="place.priority">
-                            <span class="stat-value">{{ getPriorityLabel(place.priority) }}</span>
-                          </span>
-                        </div>
-                      </div>
-
-                      <!-- Tags Preview -->
-                      <div class="place-card__tags-preview" *ngIf="place.tags && place.tags.length > 0">
-                        <span class="tag-preview" *ngFor="let tag of place.tags">{{ tag }}</span>
-                      </div>
-
-                      <!-- Order Controls (for cities and places) -->
-                      <div class="place-card__order-controls" *ngIf="(place.placeType === 'city' || (place.placeType !== 'country' && place.placeType !== 'city')) && isChild && parentChildren">
-                        <button 
-                          type="button"
-                          class="order-btn"
-                          [disabled]="!canMoveUp(place, parentChildren)"
-                          (click)="onMoveUp(place.id)"
-                          title="Przenieś wyżej w kolejności"
-                          aria-label="Przenieś wyżej">
-                          <app-form-icon name="sort" [size]="16" color="currentColor"></app-form-icon>
-                        </button>
-                        <button 
-                          type="button"
-                          class="order-btn"
-                          [disabled]="!canMoveDown(place, parentChildren)"
-                          (click)="onMoveDown(place.id)"
-                          title="Przenieś niżej w kolejności"
-                          aria-label="Przenieś niżej">
-                          <app-form-icon name="sort" [size]="16" color="currentColor"></app-form-icon>
-                        </button>
-                      </div>
-
-                      <!-- Add Child Button (only for cities, not for countries) -->
-                      <div class="place-card__add-child" *ngIf="place.placeType === 'city' && !isChild">
-                        <button 
-                          type="button"
-                          class="add-child-btn"
-                          (click)="togglePlaceExpandedForAdding(place)"
-                          [title]="isPlaceExpandedForAdding(place) ? 'Ukryj dostępne miejsca' : 'Pokaż dostępne miejsca do dodania'">
-                          <app-form-icon name="sort" [size]="14" color="currentColor"></app-form-icon>
-                          <span>{{ isPlaceExpandedForAdding(place) ? 'Ukryj' : 'Dodaj' }} miejsce</span>
-                        </button>
-                      </div>
-
-                      <!-- Available Places to Add (only for cities) -->
-                      <div class="place-card__available-to-add" *ngIf="isPlaceExpandedForAdding(place) && place.placeType === 'city'">
-                        <div class="available-places-list">
-                          <div 
-                            class="available-place-item"
-                            *ngFor="let availablePlace of getAvailablePlacesForParent(place)">
-                            <div class="available-place-item__info">
-                              <div class="available-place-item__name">{{ availablePlace.name }}</div>
-                              <div class="available-place-item__address">{{ availablePlace.address }}</div>
-                            </div>
-                            <app-button
-                              variant="basic-accept"
-                              label="Dodaj"
-                              (clicked)="onAddPlaceToParent(availablePlace, place.id)">
-                              <span icon>
-                                <app-form-icon name="plus" [size]="12" color="#52679C"></app-form-icon>
-                              </span>
-                            </app-button>
+                          <div class="place-card__address" *ngIf="place.address">
+                            <app-form-icon name="location" [size]="12" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                            {{ place.address }}
                           </div>
-                          <div class="available-places-empty" *ngIf="getAvailablePlacesForParent(place).length === 0">
-                            <p>Brak dostępnych miejsc do dodania</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Expand/Collapse Button -->
-                      <div class="place-card__expand-controls">
-                        <button 
-                          type="button"
-                          class="expand-btn"
-                          (click)="toggleExpand(place.id)"
-                          [attr.aria-expanded]="place.isExpanded"
-                          [title]="place.isExpanded ? 'Ukryj opcje edycji' : 'Pokaż opcje edycji'">
-                          <app-form-icon [name]="place.isExpanded ? 'sort' : 'sort'" [size]="16" color="currentColor"></app-form-icon>
-                          <span>{{ place.isExpanded ? 'Ukryj szczegóły' : 'Edytuj szczegóły' }}</span>
-                        </button>
-                      </div>
-
-                      <!-- Expanded Details -->
-                      <div class="place-card__details" *ngIf="place.isExpanded">
-                        <!-- Place Type -->
-                        <div class="detail-section">
-                          <label class="detail-label">
-                            <app-form-icon name="location" [size]="16" color="#52679C"></app-form-icon>
-                            Kategoria miejsca
-                          </label>
-                          <p class="detail-hint">Wybierz kategorię, która najlepiej opisuje to miejsce</p>
-                          <div class="place-type-buttons">
-                            <button
-                              type="button"
-                              *ngFor="let placeType of placeTypesWithoutAll"
-                              class="place-type-btn"
-                              [class.place-type-btn--active]="place.placeType === placeType.id"
-                              (click)="onPlaceTypeChange(place.id, placeType.id)"
-                              [title]="'Ustaw kategorię: ' + placeType.name">
-                              {{ placeType.name }}
-                            </button>
-                          </div>
-                        </div>
-
-                        <!-- Priority -->
-                        <div class="detail-section">
-                          <label class="detail-label">
-                            <app-form-icon name="target" [size]="16" color="#52679C"></app-form-icon>
-                            Priorytet wizyty
-                          </label>
-                          <p class="detail-hint">Oznacz, jak ważne jest dla Ciebie odwiedzenie tego miejsca</p>
-                          <div class="priority-buttons">
-                            <button
-                              type="button"
-                              *ngFor="let priority of priorities"
-                              class="priority-btn"
-                              [class.priority-btn--active]="place.priority === priority.id"
-                              [class.priority-btn--low]="priority.id === 'low'"
-                              [class.priority-btn--medium]="priority.id === 'medium'"
-                              [class.priority-btn--high]="priority.id === 'high'"
-                              (click)="onPriorityChange(place.id, priority.id)"
-                              [title]="'Ustaw priorytet: ' + priority.name">
-                              {{ priority.name }}
-                            </button>
-                          </div>
-                        </div>
-
-                        <!-- Tags -->
-                        <div class="detail-section">
-                          <label class="detail-label">
-                            <app-form-icon name="clipboard" [size]="16" color="#52679C"></app-form-icon>
-                            Tagi
-                          </label>
-                          <p class="detail-hint">Dodaj słowa kluczowe, aby łatwiej znaleźć to miejsce (np. "muzeum", "widok", "tradycyjne")</p>
-                          <div class="tags-container">
-                            <div class="tags-list" *ngIf="place.tags && place.tags.length > 0">
-                              <span class="tag" *ngFor="let tag of place.tags">
-                                <span class="tag-text">{{ tag }}</span>
-                                <button 
-                                  type="button" 
-                                  class="tag-remove" 
-                                  (click)="onRemoveTag(place.id, tag)"
-                                  [attr.aria-label]="'Usuń tag ' + tag"
-                                  title="Usuń tag">
-                                  <app-form-icon name="x" [size]="12" color="currentColor"></app-form-icon>
-                                </button>
-                              </span>
-                            </div>
-                            <div class="tag-input-group">
-                              <input
-                                type="text"
-                                class="tag-input"
-                                [value]="getNewTagForPlace(place.id)"
-                                (input)="setNewTagForPlace(place.id, $any($event.target).value)"
-                                placeholder="Wpisz tag i naciśnij Enter..."
-                                maxlength="20"
-                                (keydown.enter)="onAddTag(place.id); $event.preventDefault()"
-                                aria-label="Dodaj nowy tag"
-                                title="Wpisz tag i naciśnij Enter lub kliknij przycisk +"
-                              />
-                              <button 
-                                type="button" 
-                                class="tag-add-btn" 
-                                (click)="onAddTag(place.id)"
-                                title="Dodaj tag"
-                                aria-label="Dodaj tag">
-                                <app-form-icon name="plus" [size]="14" color="currentColor"></app-form-icon>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <!-- Notes -->
-                        <div class="detail-section">
-                          <label class="detail-label">
-                            <app-form-icon name="file-text" [size]="16" color="#52679C"></app-form-icon>
-                            Notatki
-                          </label>
-                          <p class="detail-hint">Zapisz ważne informacje, godziny otwarcia, ceny biletów, rekomendacje itp.</p>
-                          <textarea
-                            class="notes-textarea"
-                            [(ngModel)]="place.notes"
-                            (blur)="onNotesChange(place.id, place.notes || '')"
-                            placeholder="Dodaj notatki dotyczące tego miejsca... (np. godziny otwarcia, ceny, rekomendacje)"
-                            rows="4"
-                            aria-label="Notatki o miejscu"></textarea>
-                        </div>
-
-                        <!-- Links -->
-                        <div class="detail-section">
-                          <label class="detail-label">
-                            <app-form-icon name="map" [size]="16" color="#52679C"></app-form-icon>
-                            Przydatne linki
-                          </label>
-                          <p class="detail-hint">Dodaj linki do stron internetowych, biletów online, recenzji itp.</p>
-                          <div class="links-list" *ngIf="place.links && place.links.length > 0">
-                            <div class="link-item" *ngFor="let link of place.links; let linkIndex = index">
-                              <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="link-url" [title]="'Otwórz: ' + link.url">
-                                <app-form-icon name="map" [size]="12" color="currentColor"></app-form-icon>
-                                {{ link.name }}
-                              </a>
-                              <button 
-                                type="button" 
-                                class="link-remove" 
-                                (click)="onRemoveLink(place.id, linkIndex)"
-                                [attr.aria-label]="'Usuń link ' + link.name"
-                                title="Usuń link">
-                                <app-form-icon name="x" [size]="14" color="currentColor"></app-form-icon>
-                              </button>
-                            </div>
-                          </div>
-                          <div class="link-input-group">
-                            <div class="link-input-wrapper">
-                              <input
-                                type="text"
-                                class="link-input"
-                                [value]="getNewLinkForPlace(place.id).name"
-                                (input)="updateNewLinkName(place.id, $any($event.target).value)"
-                                placeholder="Nazwa (np. Strona oficjalna)"
-                                aria-label="Nazwa linku"
-                                title="Wpisz nazwę linku (np. 'Strona oficjalna', 'Bilety online')"
-                                required
-                              />
-                              <input
-                                type="url"
-                                class="link-input"
-                                [value]="getNewLinkForPlace(place.id).url"
-                                (input)="updateNewLinkUrl(place.id, $any($event.target).value)"
-                                placeholder="https://example.com"
-                                aria-label="URL linku"
-                                title="Wpisz pełny adres URL (musi zaczynać się od http:// lub https://)"
-                                required
-                              />
-                            </div>
-                            <button 
-                              type="button" 
-                              class="link-add-btn" 
-                              (click)="onAddLink(place.id)"
-                              title="Dodaj link (wymagane: nazwa i URL)">
-                              <app-form-icon name="plus" [size]="14" color="currentColor"></app-form-icon>
-                              Dodaj
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Actions -->
-                      <div class="place-card__actions">
-                        <button
-                          type="button"
-                          class="delete-btn"
-                          (click)="onRemovePlace(place.id)"
-                          [attr.aria-label]="'Usuń ' + place.name"
-                          title="Usuń miejsce">
-                          <app-form-icon name="trash" [size]="14" color="#DC3545"></app-form-icon>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Container for country: cities and direct places -->
-                  <div class="place-card__container" *ngIf="place.placeType === 'country' && ((place.children && place.children.length > 0) || (getDirectPlacesForCountry(place).length > 0) || isUnassignedPlace(place))">
-                    <!-- Cities in country - nowy layout: miasto obok kontenera z miejscami -->
-                    <div class="place-card__children place-card__children--cities" *ngIf="place.children && place.children.length > 0">
-                      <ng-container *ngFor="let child of place.children; let childIndex = index">
-                        <div class="city-with-places-row">
-                          <!-- Miasto -->
-                          <div class="city-card-wrapper">
-                            <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: child, index: childIndex, isChild: true, parentChildren: place.children }"></ng-container>
-                          </div>
-                          <!-- Kontener z miejscami obok miasta -->
-                          <!-- Miejsca bez wariantu -->
-                          <div class="city-places-container" *ngIf="getPlacesWithoutVariant(child.id).length > 0">
-                            <div class="place-card__children place-card__children--places">
-                              <ng-container *ngFor="let placeChild of getPlacesWithoutVariant(child.id); let placeIndex = index">
-                                <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: placeChild, index: placeIndex, isChild: true, parentChildren: getPlacesWithoutVariant(child.id) }"></ng-container>
-                              </ng-container>
-                            </div>
-                          </div>
-                          
-                          <!-- Warianty dla miasta -->
-                          <ng-container *ngFor="let variantName of getVariantsForParent(child.id)">
-                            <div class="city-places-container city-places-container--variant">
-                              <div class="variant-header">
-                                <h4 class="variant-header__title">
-                                  <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
-                                  {{ variantName }}
-                                  <span class="variant-header__count" *ngIf="getPlacesForVariant(child.id, variantName).length > 0">
-                                    ({{ getPlacesForVariant(child.id, variantName).length }})
-                                  </span>
-                                </h4>
-                              </div>
-                              <div class="place-card__children place-card__children--places" *ngIf="getPlacesForVariant(child.id, variantName).length > 0">
-                                <ng-container *ngFor="let variantPlace of getPlacesForVariant(child.id, variantName); let variantIndex = index">
-                                  <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: variantPlace, index: variantIndex, isChild: true, parentChildren: getPlacesForVariant(child.id, variantName) }"></ng-container>
-                                </ng-container>
-                              </div>
-                              <div class="variant-empty-message" *ngIf="getPlacesForVariant(child.id, variantName).length === 0">
-                                <p>Brak miejsc w tym wariancie</p>
-                              </div>
-                            </div>
-                          </ng-container>
-                          
-                          <!-- Pusty kontener jeśli brak miejsc i wariantów -->
-                          <div class="city-places-container city-places-container--empty" *ngIf="(!child.children || child.children.length === 0) && getVariantsForParent(child.id).length === 0 && getPlacesWithoutVariant(child.id).length === 0">
-                            <p class="empty-places-message">Brak miejsc w tym mieście</p>
-                          </div>
-                        </div>
-                      </ng-container>
-                    </div>
-                    <!-- Direct places in country (not in any city) - tylko dla prawdziwych krajów -->
-                    <!-- Miejsca bez wariantu -->
-                    <div class="place-card__children place-card__children--direct-places" *ngIf="!isUnassignedPlace(place) && getPlacesWithoutVariant(place.id).length > 0">
-                      <ng-container *ngFor="let directPlace of getPlacesWithoutVariant(place.id); let directIndex = index">
-                        <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: directPlace, index: directIndex, isChild: true, parentChildren: getPlacesWithoutVariant(place.id) }"></ng-container>
-                      </ng-container>
-                    </div>
-                    
-                    <!-- Warianty dla kraju (direct places) -->
-                    <ng-container *ngFor="let variantName of getVariantsForParent(place.id)">
-                      <div class="place-card__children place-card__children--direct-places place-card__children--variant" *ngIf="!isUnassignedPlace(place)">
-                        <div class="variant-header variant-header--country">
-                          <h4 class="variant-header__title">
-                            <app-form-icon name="location" [size]="14" color="#52679C"></app-form-icon>
-                            {{ variantName }}
-                            <span class="variant-header__count" *ngIf="getPlacesForVariant(place.id, variantName).length > 0">
-                              ({{ getPlacesForVariant(place.id, variantName).length }})
+                          <div class="place-card__meta-info" *ngIf="place.rating || place.priority || (place.tags && place.tags.length > 0)">
+                            <span class="meta-item" *ngIf="place.priority">
+                              {{ getPriorityLabel(place.priority) }}
                             </span>
-                          </h4>
-                        </div>
-                        <div class="place-card__children place-card__children--places" *ngIf="getPlacesForVariant(place.id, variantName).length > 0">
-                          <ng-container *ngFor="let variantPlace of getPlacesForVariant(place.id, variantName); let variantIndex = index">
-                            <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: variantPlace, index: variantIndex, isChild: true, parentChildren: getPlacesForVariant(place.id, variantName) }"></ng-container>
-                          </ng-container>
-                        </div>
-                        <div class="variant-empty-message variant-empty-message--country" *ngIf="getPlacesForVariant(place.id, variantName).length === 0">
-                          <p>Brak miejsc w tym wariancie</p>
-                        </div>
-                      </div>
-                    </ng-container>
-                    
-                    <!-- Unassigned places (bez kraju i miasta) -->
-                    <div class="place-card__children place-card__children--unassigned" *ngIf="isUnassignedPlace(place) && getDirectPlacesForCountry(place).length > 0">
-                      <div class="unassigned-places-header">
-                        <h4 class="unassigned-places-header__title">
-                          <app-form-icon name="location" [size]="16" color="#52679C"></app-form-icon>
-                          Miejsca bez przypisania
-                          <span class="unassigned-places-header__count">({{ getDirectPlacesForCountry(place).length }})</span>
-                        </h4>
-                        <p class="unassigned-places-header__message">
-                          Te miejsca nie są przypisane do żadnego kraju ani miasta. Przypisz je do odpowiedniego kraju lub miasta.
-                        </p>
-                      </div>
-                      <div class="place-card__children place-card__children--places">
-                        <ng-container *ngFor="let unassignedPlace of getDirectPlacesForCountry(place); let unassignedIndex = index">
-                          <div class="unassigned-place-wrapper">
-                            <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: unassignedPlace, index: unassignedIndex, isChild: true, parentChildren: getDirectPlacesForCountry(place) }"></ng-container>
-                            <!-- Panel przypisania -->
-                            <div class="assign-place-panel">
-                              <div class="assign-place-panel__header">
-                                <span class="assign-place-panel__label">Przypisz do:</span>
-                              </div>
-                              <div class="assign-place-panel__options">
-                                <!-- Przypisz do kraju -->
-                                <div class="assign-option" *ngIf="getAvailableCountriesForAssignment().length > 0">
-                                  <label class="assign-option__label">Kraj:</label>
-                                  <select 
-                                    class="assign-option__select"
-                                    (change)="onAssignPlaceToCountry(unassignedPlace.id, $any($event.target).value)"
-                                    [value]="''">
-                                    <option value="">Wybierz kraj...</option>
-                                    <option *ngFor="let country of getAvailableCountriesForAssignment()" [value]="country.id">
-                                      {{ country.name }}
-                                    </option>
-                                  </select>
-                                </div>
-                                <!-- Przypisz do miasta -->
-                                <div class="assign-option" *ngIf="getAvailableCitiesForAssignment().length > 0">
-                                  <label class="assign-option__label">Miasto:</label>
-                                  <select 
-                                    class="assign-option__select"
-                                    (change)="onAssignPlaceToCity(unassignedPlace.id, $any($event.target).value)"
-                                    [value]="''">
-                                    <option value="">Wybierz miasto...</option>
-                                    <option *ngFor="let city of getAvailableCitiesForAssignment()" [value]="city.id">
-                                      {{ city.name }}
-                                    </option>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
                           </div>
-                        </ng-container>
-                      </div>
-                    </div>
-                  </div>
-                </ng-template>
-
-                <!-- Render place card -->
-                <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: place, index: i, isChild: false }"></ng-container>
-              </ng-container>
-            </ng-container>
-
-            <!-- Normal list view for other filters -->
-            <ng-container *ngIf="activePlaceType !== 'all'">
-              <div 
-                class="place-card place-card--selected" 
-                *ngFor="let place of filteredSelectedPlaces; let i = index">
-                <!-- Order Badge -->
-                <div class="place-card__order">
-                  <span class="order-badge">{{ place.order || (i + 1) }}</span>
-                </div>
-
-                <div class="place-card__image" *ngIf="place.imageUrl">
-                  <img [src]="place.imageUrl" [alt]="place.name" />
-                </div>
-                <div class="place-card__content">
-                  <!-- Compact view for selected places - only essential info -->
-                  <div class="place-card__compact-info">
-                    <div class="place-card__name">{{ place.name }}</div>
-                    <div class="place-card__address">{{ place.address }}</div>
-                  </div>
-
-                  <!-- Tags Preview -->
-                  <div class="place-card__tags-preview" *ngIf="place.tags && place.tags.length > 0">
-                    <span class="tag-preview" *ngFor="let tag of place.tags">{{ tag }}</span>
-                  </div>
-
-                  <!-- Order Controls -->
-                  <div class="place-card__order-controls">
-                    <button 
-                      type="button"
-                      class="order-btn"
-                      [disabled]="i === 0"
-                      (click)="onMoveUp(place.id)"
-                      title="Przenieś wyżej w kolejności"
-                      aria-label="Przenieś wyżej">
-                      <app-form-icon name="sort" [size]="16" color="currentColor"></app-form-icon>
-                    </button>
-                    <button 
-                      type="button"
-                      class="order-btn"
-                      [disabled]="i === filteredSelectedPlaces.length - 1"
-                      (click)="onMoveDown(place.id)"
-                      title="Przenieś niżej w kolejności"
-                      aria-label="Przenieś niżej">
-                      <app-form-icon name="sort" [size]="16" color="currentColor"></app-form-icon>
-                    </button>
-                  </div>
-
-                  <!-- Expand/Collapse Button -->
-                  <div class="place-card__expand-controls">
-                    <button 
-                      type="button"
-                      class="expand-btn"
-                      (click)="toggleExpand(place.id)"
-                      [attr.aria-expanded]="place.isExpanded"
-                      [title]="place.isExpanded ? 'Ukryj opcje edycji' : 'Pokaż opcje edycji'">
-                      <app-form-icon [name]="place.isExpanded ? 'sort' : 'sort'" [size]="16" color="currentColor"></app-form-icon>
-                      <span>{{ place.isExpanded ? 'Ukryj szczegóły' : 'Edytuj szczegóły' }}</span>
-                    </button>
-                  </div>
-
-                  <!-- Expanded Details -->
-                  <div class="place-card__details" *ngIf="place.isExpanded">
-                    <!-- Place Type -->
-                    <div class="detail-section">
-                      <label class="detail-label">
-                        <app-form-icon name="location" [size]="16" color="#52679C"></app-form-icon>
-                        Kategoria miejsca
-                      </label>
-                      <p class="detail-hint">Wybierz kategorię, która najlepiej opisuje to miejsce</p>
-                      <div class="place-type-buttons">
-                        <button
-                          type="button"
-                          *ngFor="let placeType of placeTypesWithoutAll"
-                          class="place-type-btn"
-                          [class.place-type-btn--active]="place.placeType === placeType.id"
-                          (click)="onPlaceTypeChange(place.id, placeType.id)"
-                          [title]="'Ustaw kategorię: ' + placeType.name">
-                          {{ placeType.name }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Priority -->
-                    <div class="detail-section">
-                      <label class="detail-label">
-                        <app-form-icon name="target" [size]="16" color="#52679C"></app-form-icon>
-                        Priorytet wizyty
-                      </label>
-                      <p class="detail-hint">Oznacz, jak ważne jest dla Ciebie odwiedzenie tego miejsca</p>
-                      <div class="priority-buttons">
-                        <button
-                          type="button"
-                          *ngFor="let priority of priorities"
-                          class="priority-btn"
-                          [class.priority-btn--active]="place.priority === priority.id"
-                          [class.priority-btn--low]="priority.id === 'low'"
-                          [class.priority-btn--medium]="priority.id === 'medium'"
-                          [class.priority-btn--high]="priority.id === 'high'"
-                          (click)="onPriorityChange(place.id, priority.id)"
-                          [title]="'Ustaw priorytet: ' + priority.name">
-                          {{ priority.name }}
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Tags -->
-                    <div class="detail-section">
-                      <label class="detail-label">
-                        <app-form-icon name="clipboard" [size]="16" color="#52679C"></app-form-icon>
-                        Tagi
-                      </label>
-                      <p class="detail-hint">Dodaj słowa kluczowe, aby łatwiej znaleźć to miejsce (np. "muzeum", "widok", "tradycyjne")</p>
-                      <div class="tags-container">
-                        <div class="tags-list" *ngIf="place.tags && place.tags.length > 0">
-                          <span class="tag" *ngFor="let tag of place.tags">
-                            <span class="tag-text">{{ tag }}</span>
-                            <button 
-                              type="button" 
-                              class="tag-remove" 
-                              (click)="onRemoveTag(place.id, tag)"
-                              [attr.aria-label]="'Usuń tag ' + tag"
-                              title="Usuń tag">
-                              <app-form-icon name="x" [size]="12" color="currentColor"></app-form-icon>
-                            </button>
-                          </span>
                         </div>
-                        <div class="tag-input-group">
-                          <input
-                            type="text"
-                            class="tag-input"
-                            [value]="getNewTagForPlace(place.id)"
-                            (input)="setNewTagForPlace(place.id, $any($event.target).value)"
-                            placeholder="Wpisz tag i naciśnij Enter..."
-                            maxlength="20"
-                            (keydown.enter)="onAddTag(place.id); $event.preventDefault()"
-                            aria-label="Dodaj nowy tag"
-                          />
+
+                        <div class="place-card__expand-controls">
                           <button 
-                            type="button" 
-                            class="tag-add-btn" 
-                            (click)="onAddTag(place.id)"
-                            title="Dodaj tag"
-                            aria-label="Dodaj tag">
-                            <app-form-icon name="plus" [size]="14" color="currentColor"></app-form-icon>
+                            type="button"
+                            class="expand-btn"
+                            (click)="toggleExpand(place.id)">
+                            <span>{{ place.isExpanded ? 'Ukryj szczegóły' : 'Pokaż szczegóły' }}</span>
+                            <span class="expand-icon">{{ place.isExpanded ? '▲' : '▼' }}</span>
                           </button>
                         </div>
-                      </div>
-                    </div>
 
-                    <!-- Notes -->
-                    <div class="detail-section">
-                      <label class="detail-label">
-                        <app-form-icon name="file-text" [size]="16" color="#52679C"></app-form-icon>
-                        Notatki
-                      </label>
-                      <p class="detail-hint">Zapisz ważne informacje, godziny otwarcia, ceny biletów, rekomendacje itp.</p>
-                      <textarea
-                        class="notes-textarea"
-                        [(ngModel)]="place.notes"
-                        (blur)="onNotesChange(place.id, place.notes || '')"
-                        placeholder="Dodaj notatki dotyczące tego miejsca... (np. godziny otwarcia, ceny, rekomendacje)"
-                        rows="4"
-                        aria-label="Notatki o miejscu"></textarea>
-                    </div>
+                        <div class="place-card__details" *ngIf="place.isExpanded">
+                          <div class="detail-section">
+                            <label class="detail-label">Priorytet</label>
+                            <div class="detail-value">{{ getPriorityLabel(place.priority) }}</div>
+                          </div>
 
-                    <!-- Links -->
-                    <div class="detail-section">
-                      <label class="detail-label">
-                        <app-form-icon name="map" [size]="16" color="#52679C"></app-form-icon>
-                        Przydatne linki
-                      </label>
-                      <p class="detail-hint">Dodaj linki do stron internetowych, biletów online, recenzji itp.</p>
-                      <div class="links-list" *ngIf="place.links && place.links.length > 0">
-                        <div class="link-item" *ngFor="let link of place.links; let linkIndex = index">
-                          <a [href]="link.url" target="_blank" rel="noopener noreferrer" class="link-url" [title]="'Otwórz: ' + link.url">
-                            <app-form-icon name="map" [size]="12" color="currentColor"></app-form-icon>
-                            {{ link.name }}
-                          </a>
-                          <button 
-                            type="button" 
-                            class="link-remove" 
-                            (click)="onRemoveLink(place.id, linkIndex)"
-                            [attr.aria-label]="'Usuń link ' + link.name"
-                            title="Usuń link">
-                            <app-form-icon name="x" [size]="14" color="currentColor"></app-form-icon>
-                          </button>
+                          <div class="detail-section" *ngIf="place.notes">
+                            <label class="detail-label">Notatki</label>
+                            <div class="notes-readonly">{{ place.notes }}</div>
+                          </div>
                         </div>
                       </div>
-                      <div class="link-input-group">
-                        <div class="link-input-wrapper">
-                          <input
-                            type="text"
-                            class="link-input"
-                            [value]="getNewLinkForPlace(place.id).name"
-                            (input)="updateNewLinkName(place.id, $any($event.target).value)"
-                            placeholder="Nazwa (np. Strona oficjalna)"
-                            aria-label="Nazwa linku"
-                            required
-                          />
-                          <input
-                            type="url"
-                            class="link-input"
-                            [value]="getNewLinkForPlace(place.id).url"
-                            (input)="updateNewLinkUrl(place.id, $any($event.target).value)"
-                            placeholder="https://example.com"
-                            aria-label="URL linku"
-                            required
-                          />
-                        </div>
+
+                      <div class="place-card__actions">
                         <button 
-                          type="button" 
-                          class="link-add-btn" 
-                          (click)="onAddLink(place.id)"
-                          title="Dodaj link">
-                          <app-form-icon name="plus" [size]="14" color="currentColor"></app-form-icon>
-                          Dodaj
+                          type="button"
+                          class="order-btn"
+                          (click)="onMoveUp(place.id)"
+                          title="Przenieś wyżej">
+                          ↑
+                        </button>
+                        <button 
+                          type="button"
+                          class="order-btn"
+                          (click)="onMoveDown(place.id)"
+                          title="Przenieś niżej">
+                          ↓
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </ng-template>
 
-                  <!-- Actions -->
+                  <ng-container *ngTemplateOutlet="placeCard; context: { $implicit: place, index: i, isChild: false }"></ng-container>
+                </ng-container>
+              </ng-container>
+
+              <ng-container *ngIf="activePlaceType !== 'all'">
+                <div 
+                  class="place-card place-card--selected" 
+                  *ngFor="let place of filteredSelectedPlaces; let i = index">
+                  <div class="place-card__content">
+                    <div class="place-card__compact-info">
+                      <div class="place-card__name-row">
+                        <div class="place-card__name">{{ place.name }}</div>
+                        <div class="place-card__order-number">{{ place.order || (i + 1) }}</div>
+                      </div>
+                      <div class="place-card__address" *ngIf="place.address">
+                        <app-form-icon name="location" [size]="12" color="rgba(82, 103, 156, 0.7)"></app-form-icon>
+                        {{ place.address }}
+                      </div>
+                    </div>
+                  </div>
                   <div class="place-card__actions">
-                    <button
+                    <button 
                       type="button"
-                      class="delete-btn"
-                      (click)="onRemovePlace(place.id)"
-                      [attr.aria-label]="'Usuń ' + place.name"
-                      title="Usuń miejsce">
-                      <app-form-icon name="trash" [size]="14" color="#DC3545"></app-form-icon>
+                      class="order-btn"
+                      (click)="onMoveUp(place.id)"
+                      title="Przenieś wyżej">
+                      ↑
+                    </button>
+                    <button 
+                      type="button"
+                      class="order-btn"
+                      (click)="onMoveDown(place.id)"
+                      title="Przenieś niżej">
+                      ↓
                     </button>
                   </div>
                 </div>
-              </div>
-            </ng-container>
-          </div>
-        </ng-container>
+              </ng-container>
+            </div>
+          </ng-container>
 
-        <ng-template #noPlacesSelected>
-          <div class="empty-state">
-            <div class="empty-state__icon">📍</div>
-            <h4 class="empty-state__title">Brak wybranych miejsc</h4>
-            <p class="empty-state__message">
-              Dodaj miejsca z listy poniżej, aby utworzyć swój plan.
-            </p>
-          </div>
-        </ng-template>
+          <ng-template #noPlacesSelected>
+            <div class="empty-state">
+              <div class="empty-state__icon">📍</div>
+              <h4 class="empty-state__title">Brak wybranych miejsc</h4>
+              <p class="empty-state__message">
+                Dodaj miejsca, aby utworzyć plan.
+              </p>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="places-view__actions">
+          <app-button
+            variant="basic-accept"
+            label="Zapisz"
+            (clicked)="onSave()">
+          </app-button>
+        </div>
       </div>
     </div>
 
-    <!-- Sidebar and Map Section -->
-    <div class="places-edit__sidebar-map-container">
-      <!-- Map Section with Places Search -->
-      <div class="places-edit__map-section">
-        <!-- Places Autocomplete Search -->
-        <div class="places-edit__map-search">
-          <div class="places-edit__map-search-header">
-            <h3 class="places-edit__map-search-title">
-              <app-form-icon name="map" [size]="18" color="#52679C"></app-form-icon>
-              Szukaj miejsc na mapie
-            </h3>
-            <p class="places-edit__map-search-subtitle">Wyszukaj miejsce używając Google Places API i dodaj je do planu</p>
-          </div>
-          <app-places-autocomplete
-            placeholder="Wpisz nazwę miejsca, adres lub kategorię..."
-            [value]="mapSearchValue"
-            [showPreview]="true"
-            [minQueryLength]="3"
-            (placeSelected)="onPlaceSelectedFromMap($event)"
-            (placePreview)="onPlacePreviewFromMap($event)"
-            (valueChange)="onMapSearchValueChange($event)"
-            (error)="onSearchError($event)">
-          </app-places-autocomplete>
-        </div>
-
-        <!-- Map -->
-        <div class="places-edit__map">
-          <app-google-map
-            [places]="placesForMap"
-            [center]="{ lat: 52.2297, lng: 21.0122 }"
-            [zoom]="6"
-            [height]="'100%'"
-            [width]="'100%'"
-            [autoFitBounds]="true"
-            [showControls]="true"
-            [displayMode]="'full'">
-          </app-google-map>
-          <div class="map-placeholder" *ngIf="placesForMap.length === 0">
-            <div class="map-placeholder__icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="rgba(82, 103, 156, 0.3)"/>
-              </svg>
-            </div>
-            <p class="map-placeholder__text">Mapa Google</p>
-            <p class="map-placeholder__subtext">Dodaj miejsca, aby zobaczyć je na mapie</p>
-          </div>
-        </div>
-      </div>
+    <div class="places-view__map">
+      <app-google-map
+        [places]="placesForMap"
+        [center]="{ lat: 52.2297, lng: 21.0122 }"
+        [zoom]="6"
+        [height]="'100%'"
+        [width]="'100%'"
+        [autoFitBounds]="placesForMap.length > 0"
+        [showControls]="true"
+        [displayMode]="'full'">
+      </app-google-map>
     </div>
   </div>
 </div>

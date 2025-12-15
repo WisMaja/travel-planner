@@ -5,7 +5,11 @@ import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Fo
 import { SharedImports } from '../../shared/shared-imports/shared-imports';
 import { FormIcon } from '../components/ui/form-icon/form-icon';
 import { GoogleMapComponent, MapPlace } from '../components/maps/google-map/google-map';
-import { PlacesAutocompleteComponent, PlaceResult } from '../components/maps/places-autocomplete/places-autocomplete';
+import { SearchBar } from '../components/home/search-bar/search-bar';
+import { Button } from '../components/ui/buttons/button/button';
+import { TopBarPlan } from '../components/plan/top-bar-plan/top-bar-plan';
+import { PlansBasicInfoService } from '../../services/plans-basic-info.service';
+import { PlanPlaceDto, PlanPlacesService } from '../../services/plan-places.service';
 
 type PlaceCategory = 'all' | 'restaurant' | 'hotel' | 'attraction' | 'shopping' | 'transport';
 type PlaceType = 'country' | 'city' | 'accommodation' | 'attraction' | 'food';
@@ -18,6 +22,7 @@ interface PlaceLink {
 
 interface Place {
   id: number;
+  guid: string;
   name: string;
   address: string;
   category: PlaceCategory;
@@ -41,20 +46,35 @@ interface Place {
   variants?: string[]; // Lista dostępnych wariantów dla miasta/kraju
 }
 
+interface PlaceResult {
+  name: string;
+  address?: string;
+  formattedAddress?: string;
+  types?: string[];
+  rating?: number;
+  imageUrl?: string;
+  lat?: number;
+  lng?: number;
+}
+
 @Component({
   selector: 'app-plan-places-edit',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, SharedImports, FormIcon, GoogleMapComponent, PlacesAutocompleteComponent],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule, SharedImports, FormIcon, GoogleMapComponent, SearchBar, Button, TopBarPlan],
   templateUrl: './plan-places-edit.html',
   styleUrl: './plan-places-edit.scss',
 })
 export class PlanPlacesEdit implements OnInit {
   planId: string | null = null;
+  planName: string | null = null;
+  planDestination: string | null = null;
   searchQuery: string = '';
   mapSearchValue: string = '';
   activeCategory: PlaceCategory = 'all';
   categories: PlaceCategory[] = ['all', 'restaurant', 'hotel', 'attraction', 'shopping', 'transport'];
   activePlaceType: PlaceType | 'all' = 'all';
+  isLoading: boolean = false;
+  loadError: string | null = null;
   
   placeTypes: { id: PlaceType | 'all'; name: string }[] = [
     { id: 'all', name: 'Wszystkie' },
@@ -67,6 +87,12 @@ export class PlanPlacesEdit implements OnInit {
 
   get placeTypesWithoutAll(): { id: PlaceType; name: string }[] {
     return this.placeTypes.filter(pt => pt.id !== 'all') as { id: PlaceType; name: string }[];
+  }
+
+  onAddPlaceClick(): void {
+    // placeholder na późniejszy komponent dodawania miejsc
+    this.successMessage = 'Dodawanie miejsc będzie dostępne wkrótce';
+    setTimeout(() => this.successMessage = null, 2000);
   }
   
   priorities: { id: Priority; name: string }[] = [
@@ -87,13 +113,109 @@ export class PlanPlacesEdit implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private plansBasicInfoService: PlansBasicInfoService,
+    private planPlacesService: PlanPlacesService
   ) {}
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.planId = params['planId'] || null;
+      const newPlanId = params['planId'] || null;
+      if (newPlanId !== this.planId) {
+        this.planId = newPlanId;
+        if (this.planId) {
+          this.loadPlanInfo(this.planId);
+          this.fetchPlanPlaces(this.planId);
+        } else {
+          this.selectedPlaces = [];
+        }
+      }
     });
+  }
+
+  private loadPlanInfo(planId: string): void {
+    this.plansBasicInfoService.getBasicInfo(planId).subscribe({
+      next: (data) => {
+        this.planName = data.title || 'Plan podróży';
+        this.planDestination = data.destination || null;
+      },
+      error: () => {
+        this.planName = 'Plan podróży';
+        this.planDestination = null;
+      }
+    });
+  }
+
+  fetchPlanPlaces(planId: string): void {
+    this.isLoading = true;
+    this.loadError = null;
+    this.planPlacesService.getPlanPlaces(planId).subscribe({
+      next: (data) => {
+        this.selectedPlaces = this.mapPlanPlacesToUi(data);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Nie udało się pobrać miejsc', err);
+        this.loadError = 'Nie udało się pobrać miejsc planu.';
+        this.isLoading = false;
+        this.selectedPlaces = [];
+      }
+    });
+  }
+
+  private toPlaceType(kind?: string | null): PlaceType {
+    const normalized = (kind || '').toLowerCase();
+    if (normalized === 'country') return 'country';
+    if (normalized === 'city') return 'city';
+    if (normalized === 'hotel' || normalized === 'accommodation' || normalized === 'nocleg') return 'accommodation';
+    if (normalized === 'restaurant' || normalized === 'food' || normalized === 'jedzenie') return 'food';
+    if (normalized === 'attraction' || normalized === 'atrakcja') return 'attraction';
+    return 'attraction';
+  }
+
+  private mapPlanPlacesToUi(data: PlanPlaceDto[]): Place[] {
+    // nadaj lokalne numery ID aby utrzymać relacje parentId dla UI i mapy
+    const idMap = new Map<string, number>();
+    data.forEach((item, index) => idMap.set(item.plansPlacesId, index + 1));
+
+    const mapped: Place[] = data.map((item, index) => {
+      const parentNumeric = item.parentId ? idMap.get(item.parentId) : undefined;
+      return {
+        id: index + 1,
+        guid: item.plansPlacesId,
+        name: item.name || item.place?.name || 'Miejsce',
+        address: item.place?.address || '',
+        category: 'attraction',
+        rating: 0,
+        reviews: 0,
+        lat: item.place?.lat || undefined,
+        lng: item.place?.lng || undefined,
+        imageUrl: item.place?.imageUrl || undefined,
+        order: item.level,
+        priority: undefined,
+        tags: [],
+        notes: undefined,
+        links: [],
+        isExpanded: false,
+        placeType: this.toPlaceType(item.kind),
+        parentId: parentNumeric,
+        children: [],
+        variants: []
+      };
+    });
+
+    // zbuduj drzewo dzieci
+    mapped.forEach(place => {
+      if (place.parentId) {
+        const parent = mapped.find(p => p.id === place.parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(place);
+        }
+      }
+    });
+
+    return mapped;
   }
 
   navigateToPlaces(): void {
@@ -141,6 +263,10 @@ export class PlanPlacesEdit implements OnInit {
   }
   
   // Miejsca już dodane do planu
+  selectedPlaces: Place[] = [];
+  
+  // Hardcodowane miejsca - usunięte, teraz pobierane z API
+  /*
   selectedPlaces: Place[] = [
     // Polska - Kraj
     {
@@ -489,8 +615,12 @@ export class PlanPlacesEdit implements OnInit {
       children: []
     }
   ];
+  */
 
-  // Dostępne miejsca do dodania (przykładowe)
+  // Dostępne miejsca do dodania (przykładowe) - nieużywane, można usunąć w przyszłości
+  availablePlaces: Place[] = [];
+  
+  /*
   availablePlaces: Place[] = [
     // Kraje do dodania
     {
@@ -669,6 +799,7 @@ export class PlanPlacesEdit implements OnInit {
       placeType: 'food'
     }
   ];
+  */
 
   get categoryLabels(): Record<PlaceCategory, string> {
     return {
@@ -703,8 +834,8 @@ export class PlanPlacesEdit implements OnInit {
     return result;
   }
 
-  onSearchChange(query: string): void {
-    this.searchQuery = query;
+  onSearchChange(query: any): void {
+    this.searchQuery = typeof query === 'string' ? query : '';
   }
 
   onCategoryChange(category: PlaceCategory): void {
@@ -799,6 +930,7 @@ export class PlanPlacesEdit implements OnInit {
     if (unassignedCities.length > 0) {
       const unassignedCitiesCountry: Place = {
         id: -2, // Specjalne ID dla miast bez przypisania
+        guid: 'unassigned-cities',
         name: 'Miasta bez przypisania',
         address: 'Miasta nieprzypisane do kraju',
         category: 'attraction',
@@ -822,6 +954,7 @@ export class PlanPlacesEdit implements OnInit {
     if (unassignedPlaces.length > 0) {
       const unassignedCountry: Place = {
         id: -1, // Specjalne ID dla miejsc bez przypisania
+        guid: 'unassigned',
         name: 'Miejsca bez przypisania',
         address: 'Miejsca nieprzypisane do kraju ani miasta',
         category: 'attraction',
@@ -1386,18 +1519,24 @@ export class PlanPlacesEdit implements OnInit {
 
   // Mapa - miejsca do wyświetlenia
   get placesForMap(): MapPlace[] {
+    // Konwertuj miejsca do formatu MapPlace
     return this.selectedPlaces
-      .filter(place => {
-        // Filtruj miejsca które mają adres LUB współrzędne (miasta mogą nie mieć adresu, ale mają współrzędne)
-        return (place.address && place.address.trim() !== '') || (place.lat && place.lng);
-      })
+      .filter(place => 
+        place.address && 
+        place.placeType !== 'country' && 
+        place.address !== 'Europa Środkowa' && 
+        place.address !== 'Europa Południowa' &&
+        place.address !== 'Mazowsze, Polska' &&
+        place.address !== 'Małopolska, Polska' &&
+        place.address !== 'Lazio, Włochy' &&
+        place.address !== 'Veneto, Włochy'
+      )
       .map(place => ({
         id: place.id,
         name: place.name,
-        address: place.address || '',
-        lat: place.lat,
-        lng: place.lng,
-        placeType: place.placeType
+        address: place.address,
+        // zapasowy typ gdyby backend nie podał kind
+        placeType: place.placeType ?? 'attraction'
       }));
   }
 
@@ -1422,19 +1561,19 @@ export class PlanPlacesEdit implements OnInit {
 
     if (placeResult.types) {
       // Mapowanie typów Google Places na kategorie aplikacji
-      if (placeResult.types.some(t => t.includes('restaurant') || t.includes('food') || t.includes('meal'))) {
+      if (placeResult.types.some((t: string) => t.includes('restaurant') || t.includes('food') || t.includes('meal'))) {
         category = 'restaurant';
         placeType = 'food';
-      } else if (placeResult.types.some(t => t.includes('lodging') || t.includes('hotel'))) {
+      } else if (placeResult.types.some((t: string) => t.includes('lodging') || t.includes('hotel'))) {
         category = 'hotel';
         placeType = 'accommodation';
-      } else if (placeResult.types.some(t => t.includes('country'))) {
+      } else if (placeResult.types.some((t: string) => t.includes('country'))) {
         category = 'attraction';
         placeType = 'country';
-      } else if (placeResult.types.some(t => t.includes('locality') || t.includes('administrative_area_level_1'))) {
+      } else if (placeResult.types.some((t: string) => t.includes('locality') || t.includes('administrative_area_level_1'))) {
         category = 'attraction';
         placeType = 'city';
-      } else if (placeResult.types.some(t => t.includes('shopping') || t.includes('store'))) {
+      } else if (placeResult.types.some((t: string) => t.includes('shopping') || t.includes('store'))) {
         category = 'shopping';
         placeType = 'attraction';
       } else {
@@ -1446,8 +1585,9 @@ export class PlanPlacesEdit implements OnInit {
     // Utwórz nowe miejsce
     const newPlace: Place = {
       id: Date.now(), // Tymczasowe ID - w produkcji powinno być z API
+      guid: `temp-${Date.now()}`, // Tymczasowe GUID
       name: placeResult.name,
-      address: placeResult.formattedAddress || placeResult.address,
+      address: placeResult.formattedAddress || placeResult.address || '',
       category: category,
       rating: placeResult.rating || 0,
       reviews: 0,
