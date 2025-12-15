@@ -84,10 +84,36 @@ namespace backend.Connection
                 .Property(u => u.DeletedAtUtc)
                 .IsRequired(false);
 
-            // Places - DeletedAtUtc może być null
+            // Places - DeletedAtUtc i opcjonalne pola mogą być null
             modelBuilder.Entity<Places>()
                 .Property(p => p.DeletedAtUtc)
                 .IsRequired(false);
+
+            modelBuilder.Entity<Places>()
+                .Property(p => p.GooglePlaceId)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Places>()
+                .Property(p => p.Address)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Places>()
+                .Property(p => p.Lat)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Places>()
+                .Property(p => p.Lng)
+                .IsRequired(false);
+
+            modelBuilder.Entity<Places>()
+                .Property(p => p.ImageUrl)
+                .IsRequired(false);
+
+            // Indeks na GooglePlaceId dla szybkiego wyszukiwania
+            modelBuilder.Entity<Places>()
+                .HasIndex(p => p.GooglePlaceId)
+                .IsUnique()
+                .HasFilter("[GooglePlaceId] IS NOT NULL AND [DeletedAtUtc] IS NULL");
 
             // PlansPlaces - DeletedAtUtc i ParentId mogą być null
             modelBuilder.Entity<PlansPlaces>()

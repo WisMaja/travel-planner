@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -101,12 +101,125 @@ namespace backend.Services
             if (plan == null)
                 throw new ArgumentException($"Plan o ID {dto.PlansId} nie istnieje");
 
-            // Walidacja: czy miejsce istnieje
-            var place = await _dbContext.Places
-                .FirstOrDefaultAsync(p => p.PlacesId == dto.PlacesId && p.DeletedAtUtc == null);
+            Guid placesId;
+            Places? place;
 
-            if (place == null)
-                throw new ArgumentException($"Miejsce o ID {dto.PlacesId} nie istnieje");
+            // Jeśli PlacesId jest podane, użyj istniejącego miejsca
+            if (dto.PlacesId.HasValue)
+            {
+                place = await _dbContext.Places
+                    .FirstOrDefaultAsync(p => p.PlacesId == dto.PlacesId.Value && p.DeletedAtUtc == null);
+
+                if (place == null)
+                    throw new ArgumentException($"Miejsce o ID {dto.PlacesId.Value} nie istnieje");
+
+                // Sprawdź czy to miejsce już nie jest dodane do tego planu
+                var existingPlanPlace = await _dbContext.PlansPlaces
+                    .FirstOrDefaultAsync(pp => 
+                        pp.PlansId == dto.PlansId && 
+                        pp.PlacesId == dto.PlacesId.Value &&
+                        pp.DeletedAtUtc == null);
+
+                if (existingPlanPlace != null)
+                {
+                    throw new ArgumentException($"To miejsce jest już dodane do tego planu");
+                }
+
+                placesId = dto.PlacesId.Value;
+            }
+            // Jeśli PlacesId nie jest podane, ale GooglePlaceId jest podane, znajdź lub utwórz miejsce w tabeli Places
+            else if (!string.IsNullOrEmpty(dto.GooglePlaceId))
+            {
+                if (string.IsNullOrEmpty(dto.Name))
+                    throw new ArgumentException("Nazwa miejsca jest wymagana przy tworzeniu nowego miejsca");
+
+                // KROK 1: Sprawdź czy miejsce z tym GooglePlaceId już istnieje w tabeli Places
+                // (to zapobiega duplikatom miejsc - jedno miejsce może być w wielu planach)
+                place = await _dbContext.Places
+                    .FirstOrDefaultAsync(p => 
+                        p.GooglePlaceId == dto.GooglePlaceId && 
+                        p.DeletedAtUtc == null);
+
+                if (place != null)
+                {
+                    // Miejsce już istnieje w Places - użyj istniejącego PlacesId
+                    placesId = place.PlacesId;
+                    
+                    // Opcjonalnie: zaktualizuj dane jeśli są nowsze (np. zdjęcie, adres)
+                    bool needsUpdate = false;
+                    if (!string.IsNullOrEmpty(dto.Address) && place.Address != dto.Address)
+                    {
+                        place.Address = dto.Address;
+                        needsUpdate = true;
+                    }
+                    if (dto.Lat.HasValue && place.Lat != dto.Lat)
+                    {
+                        place.Lat = dto.Lat;
+                        needsUpdate = true;
+                    }
+                    if (dto.Lng.HasValue && place.Lng != dto.Lng)
+                    {
+                        place.Lng = dto.Lng;
+                        needsUpdate = true;
+                    }
+                    if (!string.IsNullOrEmpty(dto.Name) && place.Name != dto.Name)
+                    {
+                        place.Name = dto.Name;
+                        needsUpdate = true;
+                    }
+                    if (!string.IsNullOrEmpty(dto.ImageUrl) && place.ImageUrl != dto.ImageUrl)
+                    {
+                        place.ImageUrl = dto.ImageUrl;
+                        needsUpdate = true;
+                    }
+                    
+                    if (needsUpdate)
+                    {
+                        place.UpdatedAtUtc = DateTime.UtcNow;
+                        await _dbContext.SaveChangesAsync();
+                    }
+                }
+                else
+                {
+                    // KROK 2: Miejsce nie istnieje w Places - utwórz nowe z pełnymi danymi z Google Places API
+                    // (zapisujemy szczegóły miejsca: lat, lng, nazwa, imageUrl, adres, GooglePlaceId)
+                    place = new Places
+                    {
+                        PlacesId = Guid.NewGuid(),
+                        Name = dto.Name,
+                        GooglePlaceId = dto.GooglePlaceId,
+                        Address = dto.Address,
+                        Lat = dto.Lat,
+                        Lng = dto.Lng,
+                        ImageUrl = dto.ImageUrl,
+                        CreatedAtUtc = DateTime.UtcNow,
+                        UpdatedAtUtc = DateTime.UtcNow,
+                        DeletedAtUtc = null
+                    };
+
+                    _dbContext.Places.Add(place);
+                    await _dbContext.SaveChangesAsync(); // Zapisz miejsce w Places przed utworzeniem powiązania
+
+                    placesId = place.PlacesId;
+                }
+
+                // KROK 3: Sprawdź czy to miejsce już nie jest dodane do tego konkretnego planu
+                // (jeden plan nie może mieć tego samego miejsca dwa razy)
+                var existingPlanPlace = await _dbContext.PlansPlaces
+                    .FirstOrDefaultAsync(pp => 
+                        pp.PlansId == dto.PlansId && 
+                        pp.PlacesId == placesId &&
+                        pp.DeletedAtUtc == null);
+
+                if (existingPlanPlace != null)
+                {
+                    throw new ArgumentException($"Miejsce \"{dto.Name}\" jest już dodane do tego planu");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Musi być podane PlacesId lub GooglePlaceId z Name");
+            }
 
             // Walidacja: jeśli podano ParentId - upewnij się, że parent istnieje i należy do tego samego planu
             if (dto.ParentId.HasValue)
@@ -121,15 +234,17 @@ namespace backend.Services
                     throw new ArgumentException("Parent musi należeć do tego samego planu");
             }
 
+            // KROK 4: Utwórz powiązanie miejsca z planem w tabeli PlansPlaces
+            // (tutaj przechowujemy: nazwa w kontekście planu, id planu, id miejsca, rodzaj miejsca)
             var ppEntity = new PlansPlaces
             {
                 PlansPlacesId = Guid.NewGuid(),
-                PlansId = dto.PlansId,
-                PlacesId = dto.PlacesId,
-                Name = dto.Name,
-                Kind = dto.Kind,
-                Level = dto.Level,
-                ParentId = dto.ParentId,
+                PlansId = dto.PlansId,           // ID planu, do którego dodajemy miejsce
+                PlacesId = placesId,             // ID miejsca z tabeli Places (już istniejącego lub nowo utworzonego)
+                Name = dto.Name,                 // Nazwa miejsca w kontekście tego planu
+                Kind = dto.Kind,                 // Rodzaj miejsca (np. "Hotel", "Restaurant", "Attraction")
+                Level = dto.Level,               // Poziom zagnieżdżenia w hierarchii
+                ParentId = dto.ParentId,         // ID miejsca nadrzędnego (dla hierarchii)
                 CreatedAtUtc = DateTime.UtcNow,
                 UpdatedAtUtc = DateTime.UtcNow,
                 DeletedAtUtc = null
@@ -242,8 +357,12 @@ namespace backend.Services
                 dto.Place = new PlaceInfoDto
                 {
                     PlacesId = place.PlacesId,
-                    Name = place.Name
-                    // rozbuduj, jeśli masz dodatkowe pola w Places / DTO
+                    Name = place.Name,
+                    GooglePlaceId = place.GooglePlaceId,
+                    Address = place.Address,
+                    Lat = place.Lat,
+                    Lng = place.Lng,
+                    ImageUrl = place.ImageUrl
                 };
             }
 

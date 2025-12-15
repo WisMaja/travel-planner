@@ -1,4 +1,4 @@
-﻿namespace backend.DTOs
+namespace backend.DTOs
 {
     /// <summary>
     /// DTO używane do zwracania miejsc powiązanych z planem (SELECT).
@@ -54,8 +54,7 @@
     {
         public Guid PlacesId { get; set; }
         public string? Name { get; set; }
-
-        // Pola opcjonalne — uzupełnij jeśli masz dane w DB / z zewnętrznego API
+        public string? GooglePlaceId { get; set; }
         public string? Address { get; set; }
         public string? ImageUrl { get; set; }
         public double? Lat { get; set; }
@@ -68,10 +67,55 @@
     public class CreatePlanPlacesDto
     {
         public Guid PlansId { get; set; }
-        public Guid PlacesId { get; set; }
+        
+        /// <summary>
+        /// ID istniejącego miejsca (opcjonalne, jeśli podano GooglePlaceId)
+        /// </summary>
+        public Guid? PlacesId { get; set; }
+        
+        /// <summary>
+        /// Google Place ID - jeśli podano, miejsce zostanie znalezione lub utworzone
+        /// </summary>
+        public string? GooglePlaceId { get; set; }
+        
+        /// <summary>
+        /// Nazwa miejsca (wymagana przy tworzeniu nowego miejsca przez GooglePlaceId)
+        /// </summary>
         public string? Name { get; set; }
+        
+        /// <summary>
+        /// Adres miejsca (opcjonalne, używane przy tworzeniu nowego miejsca)
+        /// </summary>
+        public string? Address { get; set; }
+        
+        /// <summary>
+        /// Szerokość geograficzna (opcjonalne, używane przy tworzeniu nowego miejsca)
+        /// </summary>
+        public double? Lat { get; set; }
+        
+        /// <summary>
+        /// Długość geograficzna (opcjonalne, używane przy tworzeniu nowego miejsca)
+        /// </summary>
+        public double? Lng { get; set; }
+        
+        /// <summary>
+        /// URL zdjęcia miejsca (opcjonalne, używane przy tworzeniu nowego miejsca)
+        /// </summary>
+        public string? ImageUrl { get; set; }
+        
+        /// <summary>
+        /// Rodzaj miejsca w kontekście planu (np. "Hotel", "Restaurant", "Attraction")
+        /// </summary>
         public string? Kind { get; set; }
+        
+        /// <summary>
+        /// Poziom zagnieżdżenia w hierarchii
+        /// </summary>
         public int Level { get; set; }
+        
+        /// <summary>
+        /// ID miejsca nadrzędnego (dla hierarchii)
+        /// </summary>
         public Guid? ParentId { get; set; }
     }
 
@@ -84,5 +128,48 @@
         public string? Kind { get; set; }
         public int? Level { get; set; }
         public Guid? ParentId { get; set; }
+    }
+
+    /// <summary>
+    /// DTO reprezentujące miejsce (Places)
+    /// </summary>
+    public class PlaceDto
+    {
+        public Guid PlacesId { get; set; }
+        public string? Name { get; set; }
+        public string? GooglePlaceId { get; set; }
+        public string? Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
+        public string? ImageUrl { get; set; }
+        public DateTime CreatedAtUtc { get; set; }
+        public DateTime UpdatedAtUtc { get; set; }
+        public DateTime? DeletedAtUtc { get; set; }
+    }
+
+    /// <summary>
+    /// DTO do tworzenia miejsca (Places)
+    /// </summary>
+    public class CreatePlaceDto
+    {
+        public string? Name { get; set; }
+        public string? GooglePlaceId { get; set; }
+        public string? Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
+        public string? ImageUrl { get; set; }
+    }
+
+    /// <summary>
+    /// DTO do aktualizacji miejsca (Places) - pola opcjonalne
+    /// </summary>
+    public class UpdatePlaceDto
+    {
+        public string? Name { get; set; }
+        public string? GooglePlaceId { get; set; }
+        public string? Address { get; set; }
+        public double? Lat { get; set; }
+        public double? Lng { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }

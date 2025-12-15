@@ -22,6 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Rejestracja serwisów
 builder.Services.AddScoped<IPlansService, PlansService>();
 builder.Services.AddScoped<IPlansBasicInfoService, PlansBasicInfoService>();
+builder.Services.AddScoped<IPlanPlacesService, PlanPlacesService>();
+builder.Services.AddScoped<IPlacesService, PlacesService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 
 // Konfiguracja autoryzacji JWT

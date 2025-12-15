@@ -16,6 +16,31 @@ namespace backend.Models
         public string? Name { get; set; }
         
         /// <summary>
+        /// Google Place ID - unikalny identyfikator z Google Places API
+        /// </summary>
+        public string? GooglePlaceId { get; set; }
+        
+        /// <summary>
+        /// Adres miejsca
+        /// </summary>
+        public string? Address { get; set; }
+        
+        /// <summary>
+        /// Szerokość geograficzna
+        /// </summary>
+        public double? Lat { get; set; }
+        
+        /// <summary>
+        /// Długość geograficzna
+        /// </summary>
+        public double? Lng { get; set; }
+        
+        /// <summary>
+        /// URL zdjęcia miejsca
+        /// </summary>
+        public string? ImageUrl { get; set; }
+        
+        /// <summary>
         /// Data utworzenia rekordu (UTC)
         /// </summary>
         public DateTime CreatedAtUtc { get; set; }
